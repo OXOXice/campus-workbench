@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四级备考助手 · CET-4 Study</title>
+<style>
+:root{
+  --blue:#2f6fed; --blue-d:#1f55c4; --blue-l:#eaf1ff;
+  --ink:#17233b; --ink2:#5b6b86; --line:#e3eaf6; --bg:#f5f8fe;
+  --ok:#1f9d6b; --warn:#d9534f; --gold:#e0a325;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1000px;margin:0 auto;padding:0 18px 60px}
+header.top{background:linear-gradient(135deg,#2f6fed,#5b8ef7);color:#fff;padding:24px 0 20px;border-radius:0 0 22px 22px;margin-bottom:16px}
+header.top .wrap{padding-bottom:0}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px}
+h1{font-size:20px;font-weight:700}
+.sub{font-size:12.5px;opacity:.9}
+.countdown{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.countdown .cd{background:rgba(255,255,255,.16);border-radius:14px;padding:10px 16px;text-align:center;min-width:88px}
+.countdown .cd b{display:block;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.2}
+.countdown .cd span{font-size:11.5px;opacity:.9}
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 0 12px;position:sticky;top:0;background:var(--bg);z-index:20;border-bottom:1px solid var(--line);margin-bottom:16px}
+nav.tabs button{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--ink2);padding:8px 14px;border-radius:20px;font-size:13.5px;cursor:pointer;font-family:inherit}
+nav.tabs button.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;box-shadow:0 3px 10px rgba(47,111,237,.28)}
+section.panel{display:none}
+section.panel.on{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 8px rgba(23,35,59,.04)}
+.card h2{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2 .dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.muted{color:var(--ink2);font-size:13px}
+.btn{border:none;background:var(--blue);color:#fff;padding:10px 18px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--blue-d)}
+.btn.ghost{background:#fff;color:var(--ink2);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:#bcd0f5;color:var(--blue-d)}
+.btn.ok{background:var(--ok)} .btn.warn{background:#fff;color:var(--warn);border:1px solid #f3d3d2}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* 单词卡 */
+.wordbox{background:var(--blue-l);border-radius:16px;padding:22px;text-align:center;margin-bottom:12px}
+.wordbox .w{font-size:28px;font-weight:800;letter-spacing:.4px}
+.wordbox .ph{font-size:13.5px;color:var(--ink2);margin-top:2px}
+.wordbox .mean{font-size:15px;margin-top:14px;min-height:26px}
+.wordbox .mean.hide{color:#8fa9dd;font-size:13px}
+.wordbox .tag{margin-top:10px;font-size:12px;color:var(--blue-d)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.progress{height:9px;background:#e7eefc;border-radius:9px;overflow:hidden;margin-top:12px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,#2f6fed,#6ea0ff);border-radius:9px;transition:.4s;width:0}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.kpi div{background:var(--blue-l);border-radius:12px;padding:12px;text-align:center}
+.kpi b{display:block;font-size:21px;color:var(--blue-d);font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--blue-d);opacity:.8}
+/* 题目 */
+.q{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.q .stem{font-size:14px;font-weight:600;margin-bottom:10px}
+.opt{display:block;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:7px;cursor:pointer;font-size:13.5px}
+.opt:hover{border-color:#bcd0f5;background:#f8fbff}
+.opt.sel{border-color:var(--blue);background:var(--blue-l)}
+.opt.right{border-color:var(--ok);background:#eafaf2}
+.opt.wrong{border-color:var(--warn);background:#fdeceb}
+.feedback{font-size:13px;margin-top:6px}
+/* 表格 */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12.5px;color:var(--ink2);background:#fafcff;font-weight:600}
+tr:hover td{background:#fbfdff}
+/* 词汇表 */
+.tagrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.tagrow button{border:1px solid var(--line);background:#fff;color:var(--ink2);padding:6px 13px;border-radius:16px;font-size:12.5px;cursor:pointer;font-family:inherit}
+.tagrow button.on{background:var(--blue-l);border-color:#bcd0f5;color:var(--blue-d);font-weight:600}
+.vocab{display:grid;gap:8px}
+.vocab .v{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:baseline}
+.vocab .en{font-weight:700;font-size:14px;min-width:150px}
+.vocab .cn{font-size:13px;color:var(--ink2)}
+.empty{text-align:center;color:var(--ink2);font-size:13px;padding:22px 0}
+input[type=date],input[type=text],input[type=number],select{
+  border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:13.5px;
+  font-family:inherit;color:var(--ink);
+}
+footer{text-align:center;font-size:12px;color:#9aa7bd;padding:20px 0 0}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">📘</div>
+      <div>
+        <h1>四级备考助手</h1>
+        <div class="sub">CET-4 Study · 测绘 2026 级</div>
+      </div>
+    </div>
+    <div class="countdown">
+      <div class="cd"><b id="cdDay">—</b><span>距四级考试（天）</span></div>
+      <div class="cd"><b id="cdWord">0</b><span>已背单词</span></div>
+      <div class="cd"><b id="cdStreak">0</b><span>连续打卡</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button data-p="today" class="on">今日计划</button>
+    <button data-p="word">单词打卡</button>
+    <button data-p="quiz">真题练习</button>
+    <button data-p="writing">作文模板</button>
+    <button data-p="major">专业英语</button>
+    <button data-p="setting">设置</button>
+  </nav>
+
+  <!-- 今日计划 -->
+  <section class="panel on" id="p-today">
+    <div class="card">
+      <h2><span class="dot"></span>今天要做的三件事</h2>
+      <div id="taskList"></div>
+      <p class="muted" style="margin-top:12px">碎片时间优先背单词，整块时间留给真题和听力。完成一项点一下即可打卡。</p>
+    </div>
+    <div class="card">
+      <h2><span class="dot"></span>本机学习记录</h2>
+      <div class="kpi">
+        <div><b id="kWord">0</b><span>累计背词</span></div>
+        <div><b id="kQuiz">0</b><span>做题正确率</span></div>
+        <div><b id="kDays">0</b><span>学习天数</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 单词打卡 -->
+  <section class="panel" id="p-word">
+    <div class="card">
+      <h2><span class="dot"></span>单词打卡 · 四级核心词</h2>
+      <div class="wordbox">
+        <div class="w" id="wWord">—</div>
+        <div class="ph" id="wPh">—</div>
+        <div class="mean hide" id="wMean" onclick="reveal()">点击或按「看释义」显示中文</div>
+        <div class="tag" id="wTag">—</div>
+      </div>
+      <div class="row">
+        <button class="btn ghost" onclick="reveal()">看释义</button>
+        <button class="btn ok" onclick="markWord(1)">认识</button>
+        <button class="btn warn" onclick="markWord(0)">不认识</button>
+      </div>
+      <div class="progress"><i id="wBar"></i></div>
+      <p class="muted" id="wProg" style="margin-top:8px;text-align:center">—</p>
+    </div>
+    <div class="card">
+      <h2><span class="dot"></span>今日已背</h2>
+      <div id="doneList"></div>
+    </div>
+  </section>
+
+  <!-- 真题练习 -->
+  <section class="panel" id="p-quiz">
+    <div class="card">
+      <h2><span class="dot"></span>词汇与语法真题（示例 5 题）</h2>
+      <div id="quizBox"></div>
+      <div style="margin-top:12px"><button class="btn" onclick="checkQuiz()">提交答案</button>
+        <span class="feedback" id="quizFb"></span></div>
+    </div>
+  </section>
+
+  <!-- 作文模板 -->
+  <section class="panel" id="p-writing">
+    <div class="card">
+      <h2><span class="dot"></span>三段式万能结构</h2>
+      <p class="muted">四级作文一般 120–180 词，三段最稳：引入（现象/观点）→ 论证（两三条理由）→ 结论（建议/展望）。</p>
+    </div>
+    <div id="tplBox"></div>
+  </section>
+
+  <!-- 专业英语 -->
+  <section class="panel" id="p-major">
+    <div class="card">
+      <h2><span class="dot"></span>测绘 / 地学专业高频词</h2>
+      <div class="tagrow" id="majorChips"></div>
+      <div class="vocab" id="majorList"></div>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section class="panel" id="p-setting">
+    <div class="card">
+      <h2><span class="dot"></span>考试日期</h2>
+      <div class="row" style="justify-content:flex-start">
+        <input type="date" id="examDate">
+        <button class="btn" onclick="setExam()">保存</button>
+      </div>
+      <p class="muted" style="margin-top:10px">默认按 2026 年 12 月 19 日计（请以教务处通知为准）。</p>
+    </div>
+    <div class="card">
+      <h2><span class="dot"></span>数据</h2>
+      <div class="row" style="justify-content:flex-start">
+        <button class="btn ghost" onclick="resetAll()">清空本机学习记录</button>
+      </div>
+      <p class="muted" style="margin-top:10px">所有数据只保存在这台设备的浏览器里，不会上传。</p>
+    </div>
+  </section>
+
+  <footer>四级备考助手 · 数据保存在本机（localStorage）· 单词、语法、范文务必与真题核对</footer>
+</div>
+
+<script>
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- 词库 ---------- */
+const WORDS = [
+  ['abandon','/əˈbændən/','v. 放弃；抛弃','核心'],
+  ['capacity','/kəˈpæsəti/','n. 能力；容量','核心'],
+  ['consequence','/ˈkɒnsɪkwəns/','n. 结果；后果','核心'],
+  ['demonstrate','/ˈdemənstreɪt/','v. 证明；演示','核心'],
+  ['efficient','/ɪˈfɪʃnt/','adj. 高效的','核心'],
+  ['fundamental','/ˌfʌndəˈmentl/','adj. 根本的；基础的','核心'],
+  ['generate','/ˈdʒenəreɪt/','v. 产生；生成','核心'],
+  ['inevitable','/ɪnˈevɪtəbl/','adj. 不可避免的','核心'],
+  ['motivate','/ˈməʊtɪveɪt/','v. 激励；成为……的动机','核心'],
+  ['obtain','/əbˈteɪn/','v. 获得','核心'],
+  ['participate','/pɑːˈtɪsɪpeɪt/','v. 参与（in）','核心'],
+  ['reluctant','/rɪˈlʌktənt/','adj. 不情愿的','核心'],
+  ['significant','/sɪɡˈnɪfɪkənt/','adj. 重要的；显著的','核心'],
+  ['tendency','/ˈtendənsi/','n. 倾向；趋势','核心'],
+  ['undergo','/ˌʌndəˈɡəʊ/','v. 经历；遭受','核心'],
+  ['whereas','/ˌweərˈæz/','conj. 然而；尽管','核心'],
+  ['accumulate','/əˈkjuːmjəleɪt/','v. 积累','进阶'],
+  ['compensate','/ˈkɒmpenseɪt/','v. 补偿（for）','进阶'],
+  ['diminish','/dɪˈmɪnɪʃ/','v. 减少；削弱','进阶'],
+  ['emphasize','/ˈemfəsaɪz/','v. 强调','进阶'],
+  ['facilitate','/fəˈsɪlɪteɪt/','v. 促进；使便利','进阶'],
+  ['illustrate','/ˈɪləstreɪt/','v. 说明；举例','进阶'],
+  ['justify','/ˈdʒʌstɪfaɪ/','v. 证明……正当','进阶'],
+  ['nevertheless','/ˌnevəðəˈles/','adv. 尽管如此','进阶'],
+  ['priority','/praɪˈɒrəti/','n. 优先事项','进阶'],
+  ['substitute','/ˈsʌbstɪtjuːt/','n./v. 替代（for）','进阶'],
+  ['underestimate','/ˌʌndərˈestɪmeɪt/','v. 低估','进阶'],
+  ['vulnerable','/ˈvʌlnərəbl/','adj. 脆弱的；易受伤的','进阶']
+];
+
+/* ---------- 专业词库 ---------- */
+const MAJOR = [
+  ['surveying','测量；测绘','surveying and mapping 测绘'],
+  ['geodesy','大地测量学',''],
+  ['topography','地形；地形测量','topographic map 地形图'],
+  ['elevation','高程；海拔','elevation difference 高差'],
+  ['latitude','纬度',''],['longitude','经度',''],
+  ['coordinate','坐标','plane coordinate 平面坐标'],
+  ['benchmark','水准点；基准',''],
+  ['traverse','导线；横穿','traverse survey 导线测量'],
+  ['contour','等高线','contour line 等高线'],
+  ['scale','比例尺；尺度','scale 1:500 比例尺 1:500'],
+  ['accuracy','精度',''],
+  ['satellite','卫星','satellite positioning 卫星定位'],
+  ['remote sensing','遥感','remote sensing image 遥感影像'],
+  ['GIS','地理信息系统','Geographic Information System'],
+  ['GPS','全球定位系统','Global Positioning System'],
+  ['datum','基准面','geodetic datum 大地基准'],
+  ['profile','剖面','cross section 横断面'],
+  ['slope','坡度；边坡',''],
+  ['reservoir','水库',''],
+  ['watershed','流域',''],
+  ['land use','土地利用',''],
+  ['cartography','地图制图学',''],
+  ['digitize','数字化',''],
+  ['tolerance','限差；容差',''],
+  ['calibration','校准',''],
+  ['terrain','地形；地势','terrain model 地形模型'],
+  ['subsidence','沉降','land subsidence 地面沉降'],
+  ['deformation','形变','deformation monitoring 变形监测'],
+  ['photogrammetry','摄影测量','']
+];
+
+/* ---------- 作文模板 ---------- */
+const TPL = [
+  {t:'① 观点类（Should students …?）', c:
+`【第一段 · 引入】
+Nowadays, whether college students should ____ has aroused wide public concern.
+Opinions vary from person to person. As far as I am concerned, ____.
+
+【第二段 · 论证】
+To begin with, ____. (理由一 + 展开)
+What is more, ____. (理由二 + 展开)
+For instance, ____. (举例)
+
+【第三段 · 结论】
+Taking the above into consideration, it is safe to conclude that ____.
+Only in this way can we ____.`},
+  {t:'② 现象类（The popularity of …）', c:
+`【第一段】
+In recent years, ____ has become increasingly popular among college students.
+According to a recent survey, ____.
+
+【第二段】
+There are several reasons behind this phenomenon. First, ____.
+Second, ____. Third, ____.
+
+【第三段】
+In my opinion, ____. On the one hand, ____; on the other hand, ____.
+As long as we ____, ____.`},
+  {t:'③ 图表 / 数据类', c:
+`【第一段 · 描述】
+As is vividly shown in the chart, the number of ____ rose/fell from ____ to ____
+between ____ and ____.
+
+【第二段 · 分析】
+Several factors contribute to this change. To start with, ____.
+In addition, ____.
+
+【第三段 · 结论】
+From what has been discussed above, we may safely draw the conclusion that ____.`},
+  {t:'高频连接词（背这一组就够）', c:
+`递进：Moreover / What is more / In addition / Furthermore
+转折：However / Nevertheless / Whereas / On the contrary
+举例：For instance / Take ____ as an example
+因果：Therefore / Consequently / As a result / Owing to
+总结：In conclusion / To sum up / Taking ____ into consideration
+让步：Although / Despite / Admittedly`}
+];
+
+/* ---------- 真题示例 ---------- */
+const QUIZ = [
+  {s:'The manager insisted that the report ____ before Friday.', o:['is finished','be finished','will be finished','finished'], a:1,
+   e:'insist 表「要求」时从句用虚拟语气 (should) + 动词原形，should 可省略。'},
+  {s:'She is used to ____ up early every morning.', o:['get','getting','got','gets'], a:1,
+   e:'be used to doing「习惯于」；used to do 才是「过去常常」。'},
+  {s:'Hardly ____ the classroom when the bell rang.', o:['he had entered','had he entered','he entered','did he enter'], a:1,
+   e:'Hardly 位于句首要部分倒装，且与 when 搭配，用过去完成时 had he entered。'},
+  {s:'This is the very book ____ I have been looking for.', o:['which','that','what','who'], a:1,
+   e:'先行词被 the very / the only / all 修饰时，定语从句只能用 that。'},
+  {s:'By the end of last term, he ____ over 3,000 English words.', o:['learns','learned','has learned','had learned'], a:3,
+   e:'by the end of + 过去时间，主句用过去完成时。'}
+];
+
+/* ---------- 状态 ---------- */
+let examDate = LS.get('cet4_exam', '2026-12-19');
+let learned  = LS.get('cet4_learned', {});   // {word: 1|0}
+let quizStat = LS.get('cet4_quiz', {right:0, total:0});
+let days     = LS.get('cet4_days', []);
+let tasks    = LS.get('cet4_tasks', {});
+let idx      = LS.get('cet4_idx', 0);
+let majorCat = '全部';
+
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+
+/* ---------- 倒计时 ---------- */
+function renderCountdown(){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const ex = new Date(examDate + 'T00:00:00');
+  const d = Math.max(0, Math.round((ex - now) / 86400000));
+  document.getElementById('cdDay').textContent = d;
+  document.getElementById('cdWord').textContent = Object.keys(learned).length;
+  document.getElementById('cdStreak').textContent = streak();
+}
+function streak(){
+  if(!days.length) return 0;
+  const ds = [...days].sort().reverse();
+  let s = 0; let cur = new Date(); cur.setHours(0,0,0,0);
+  for(let i=0;i<400;i++){
+    const key = cur.toISOString().slice(0,10);
+    if(ds.includes(key)){ s++; cur.setDate(cur.getDate()-1); }
+    else if(i===0){ cur.setDate(cur.getDate()-1); }  // 今天还没打卡不算断
+    else break;
+  }
+  return s;
+}
+
+/* ---------- 今日计划 ---------- */
+function renderTasks(){
+  const list = [
+    ['背 20 个四级核心词', 'word'],
+    ['做 5 道词汇语法题', 'quiz'],
+    ['读一篇作文模板并抄写一遍', 'writing'],
+    ['记 10 个测绘专业英语词', 'major']
+  ];
+  const k = todayKey();
+  document.getElementById('taskList').innerHTML = list.map(([t,key]) => {
+    const done = tasks[k] && tasks[k][key];
+    return `<div class="item" style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+        margin-bottom:8px;display:flex;gap:12px;align-items:center;${done?'background:#f3fbf7':''}">
+      <span style="font-size:17px">${done?'✅':'⬜'}</span>
+      <div style="flex:1;font-size:14px;${done?'color:var(--ink2);text-decoration:line-through':''}">${t}</div>
+      <button class="btn ghost" style="padding:5px 12px;font-size:12px"
+        onclick="toggleTask('${key}')">${done?'已完成':'打卡'}</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('kWord').textContent = Object.keys(learned).length;
+  document.getElementById('kQuiz').textContent = quizStat.total
+    ? Math.round(quizStat.right / quizStat.total * 100) + '%' : '—';
+  document.getElementById('kDays').textContent = days.length;
+}
+function toggleTask(key){
+  const k = todayKey();
+  tasks[k] = tasks[k] || {};
+  tasks[k][key] = !tasks[k][key];
+  LS.set('cet4_tasks', tasks);
+  if(tasks[k][key] && !days.includes(k)){ days.push(k); LS.set('cet4_days', days); }
+  renderTasks(); renderCountdown();
+}
+
+/* ---------- 单词 ---------- */
+function curWord(){ return WORDS[idx % WORDS.length]; }
+function renderWord(){
+  const [w, ph, mean, tag] = curWord();
+  document.getElementById('wWord').textContent = w;
+  document.getElementById('wPh').textContent = ph;
+  const m = document.getElementById('wMean');
+  m.dataset.mean = mean;
+  m.textContent = '· · · 点击「看释义」· · ·';
+  m.classList.add('hide');
+  document.getElementById('wTag').textContent = tag + '词汇 · 第 ' + ((idx % WORDS.length) + 1) + ' / ' + WORDS.length;
+  const total = WORDS.length;
+  const done = Object.keys(learned).length;
+  document.getElementById('wBar').style.width = Math.min(100, done / total * 100) + '%';
+  document.getElementById('wProg').textContent = `已掌握 ${done} / ${total} 个核心词`;
+  const dl = Object.keys(learned).slice(-12).reverse();
+  document.getElementById('doneList').innerHTML = dl.length
+    ? dl.map(x => `<span class="badge" style="display:inline-block;background:var(--blue-l);color:var(--blue-d);
+        border-radius:10px;padding:3px 10px;margin:0 6px 6px 0;font-size:12.5px">${x}</span>`).join('')
+    : '<div class="empty">还没开始，点「认识」记录第一个词</div>';
+}
+function reveal(){
+  const m = document.getElementById('wMean');
+  m.classList.remove('hide');
+  if(m.dataset.mean) m.textContent = m.dataset.mean;
+}
+function markWord(ok){
+  const [w] = curWord();
+  learned[w] = ok;
+  const k = todayKey();
+  if(!days.includes(k)){ days.push(k); }
+  LS.set('cet4_learned', learned); LS.set('cet4_days', days);
+  idx++; LS.set('cet4_idx', idx);
+  renderWord(); renderCountdown(); renderTasks();
+}
+
+/* ---------- 真题 ---------- */
+let picks = {};
+function renderQuiz(){
+  document.getElementById('quizBox').innerHTML = QUIZ.map((q, i) => `
+    <div class="q" id="q${i}">
+      <div class="stem">${i+1}. ${q.s}</div>
+      ${q.o.map((o, j) => `<div class="opt" data-q="${i}" data-o="${j}"
+          onclick="pick(${i},${j})">${'ABCD'[j]}. ${o}</div>`).join('')}
+      <div class="feedback" id="fb${i}"></div>
+    </div>`).join('');
+  picks = {};
+}
+function pick(i, j){
+  picks[i] = j;
+  document.querySelectorAll(`#q${i} .opt`).forEach(el => el.classList.remove('sel'));
+  document.querySelector(`#q${i} .opt[data-o="${j}"]`).classList.add('sel');
+}
+function checkQuiz(){
+  let right = 0;
+  QUIZ.forEach((q, i) => {
+    const box = document.getElementById('q' + i);
+    box.querySelectorAll('.opt').forEach(el => {
+      const j = Number(el.dataset.o);
+      el.classList.remove('right', 'wrong');
+      if(j === q.a) el.classList.add('right');
+      else if(picks[i] === j) el.classList.add('wrong');
+    });
+    const ok = picks[i] === q.a;
+    if(ok) right++;
+    document.getElementById('fb' + i).innerHTML =
+      `<span style="color:${ok?'var(--ok)':'var(--warn)'}">${ok?'✔ 正确':'✘ 正确答案：'+'ABCD'[q.a]}</span>
+       <span class="muted"> — ${q.e}</span>`;
+  });
+  quizStat.right += right; quizStat.total += QUIZ.length;
+  LS.set('cet4_quiz', quizStat);
+  document.getElementById('quizFb').textContent = `本组得分 ${right} / ${QUIZ.length}`;
+  renderTasks();
+}
+
+/* ---------- 作文 ---------- */
+function renderTpl(){
+  document.getElementById('tplBox').innerHTML = TPL.map(t => `
+    <div class="card">
+      <h2><span class="dot"></span>${t.t}</h2>
+      <pre style="white-space:pre-wrap;font-family:Consolas,Menlo,monospace;font-size:12.5px;
+        line-height:1.85;color:#28364f;background:#f8fbff;border-radius:10px;padding:14px;
+        border:1px solid var(--line);overflow-x:auto">${t.c}</pre>
+    </div>`).join('');
+}
+
+/* ---------- 专业词 ---------- */
+function renderMajor(){
+  document.getElementById('majorChips').innerHTML = ['全部','基础','测量','遥感与GIS','工程']
+    .map(c => `<button class="${c===majorCat?'on':''}" onclick="setMajor('${c}')">${c}</button>`).join('');
+  const list = MAJOR.slice(0, 30);
+  const start = majorCat === '全部' ? 0 : list.findIndex(x => 1) ;
+  document.getElementById('majorList').innerHTML = list.map(([en, cn, ex]) => `
+    <div class="v"><div class="en">${en}</div>
+      <div><div class="cn">${cn}</div>${ex?`<div class="cn" style="font-size:12px;opacity:.8">${ex}</div>`:''}</div>
+    </div>`).join('');
+}
+function setMajor(c){ majorCat = c; renderMajor(); }
+
+/* ---------- 设置 ---------- */
+function setExam(){
+  const v = document.getElementById('examDate').value;
+  if(v){ examDate = v; LS.set('cet4_exam', v); renderCountdown(); }
+}
+function resetAll(){
+  ['cet4_learned','cet4_quiz','cet4_days','cet4_tasks','cet4_idx'].forEach(k => localStorage.removeItem(k));
+  learned = {}; quizStat = {right:0,total:0}; days = []; tasks = {}; idx = 0;
+  renderCountdown(); renderWord(); renderTasks();
+}
+
+/* ---------- 启动 ---------- */
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('section.panel').forEach(s => s.classList.remove('on'));
+  document.getElementById('p-' + b.dataset.p).classList.add('on');
+});
+document.getElementById('examDate').value = examDate;
+renderCountdown(); renderTasks(); renderWord(); renderQuiz(); renderTpl(); renderMajor();
+/* demo=1 : mark a few words as learned (demo data for screenshots) */
+(function(){
+  if(!new URLSearchParams(location.search).get('demo')) return;
+  WORDS.slice(0, 12).forEach(function(x){ learned[x[0]] = 1; });
+  idx = 12;
+  var k = todayKey();
+  if(days.indexOf(k) < 0) days.push(k);
+  if(days.indexOf('2026-11-03') < 0) days.push('2026-11-03');
+  if(days.indexOf('2026-11-02') < 0) days.push('2026-11-02');
+  if(days.indexOf('2026-11-01') < 0) days.push('2026-11-01');
+  quizStat = {right: 8, total: 10};
+  tasks[todayKey()] = {word: true, quiz: true};
+  LS.set('cet4_learned', learned); LS.set('cet4_days', days);
+  renderCountdown(); renderTasks(); renderWord(); reveal();
+})();
+
+/* URL parameter -> open a tab directly (for screenshots / sharing) */
+(function(){
+  var q = new URLSearchParams(location.search).get('p');
+  if(q){
+    var b = document.querySelector('#tabs button[data-p="' + q + '"]');
+    if(b && !b.classList.contains('on')) b.click();
+  }
+})();
+
+/* still=1 : disable panel animation so screenshots never catch a fade */
+(function(){
+  var p = new URLSearchParams(location.search);
+  if(p.get('still')){
+    var st = document.createElement('style');
+    st.textContent = 'section.panel{animation:none!important}';
+    document.head.appendChild(st);
+  }
+})();
+</script>
+</body>
+</html>
