@@ -208,8 +208,24 @@ footer{text-align:center;font-size:12px;color:#9aa7bd;padding:20px 0 0}
 <script>
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
-  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  set(k,v){
+    try{ localStorage.setItem(k,JSON.stringify(v)); return true; }
+    catch(e){ storageWarn(); return false; }   // 无痕模式 / 空间已满：让用户知道没存上
+  }
 };
+
+let storageWarned = false;
+function storageWarn(){
+  if(storageWarned) return;
+  storageWarned = true;
+  const t = document.createElement('div');
+  t.textContent = '浏览器拒绝写入本地存储（无痕模式或空间已满），本次修改不会被保存';
+  t.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);' +
+    'background:#7a2b28;color:#fff;font-size:13px;line-height:1.5;padding:10px 16px;' +
+    'border-radius:10px;z-index:99;max-width:86%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.22)';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 6000);
+}
 
 /* ---------- 词库 ---------- */
 const WORDS = [
@@ -346,7 +362,12 @@ let tasks    = LS.get('cet4_tasks', {});
 let idx      = LS.get('cet4_idx', 0);
 let majorCat = '全部';
 
-function todayKey(){ return new Date().toISOString().slice(0,10); }
+/* 用本地日期，不能用 toISOString()（那是 UTC，东八区 00:00–08:00 会被算成前一天） */
+function todayKey(d){
+  const x = d || new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${x.getFullYear()}-${p(x.getMonth()+1)}-${p(x.getDate())}`;
+}
 
 /* ---------- 倒计时 ---------- */
 function renderCountdown(){
@@ -362,7 +383,7 @@ function streak(){
   const ds = [...days].sort().reverse();
   let s = 0; let cur = new Date(); cur.setHours(0,0,0,0);
   for(let i=0;i<400;i++){
-    const key = cur.toISOString().slice(0,10);
+    const key = todayKey(cur);
     if(ds.includes(key)){ s++; cur.setDate(cur.getDate()-1); }
     else if(i===0){ cur.setDate(cur.getDate()-1); }  // 今天还没打卡不算断
     else break;
@@ -491,15 +512,25 @@ function renderTpl(){
 }
 
 /* ---------- 专业词 ---------- */
+/* 每个专业词归到哪个分类上（原来点了没反应，因为根本没做过滤） */
+const MAJOR_CAT = {
+  'surveying':'测量','geodesy':'测量','topography':'测量','elevation':'测量',
+  'latitude':'基础','longitude':'基础','coordinate':'测量','benchmark':'测量',
+  'traverse':'测量','contour':'测量','scale':'基础','accuracy':'测量',
+  'satellite':'遥感与GIS','remote sensing':'遥感与GIS','GIS':'遥感与GIS','GPS':'遥感与GIS',
+  'datum':'测量','profile':'工程','slope':'工程','reservoir':'工程','watershed':'工程',
+  'land use':'遥感与GIS','cartography':'遥感与GIS','digitize':'遥感与GIS',
+  'tolerance':'工程','calibration':'工程','terrain':'遥感与GIS',
+  'subsidence':'工程','deformation':'工程','photogrammetry':'遥感与GIS'
+};
 function renderMajor(){
   document.getElementById('majorChips').innerHTML = ['全部','基础','测量','遥感与GIS','工程']
     .map(c => `<button class="${c===majorCat?'on':''}" onclick="setMajor('${c}')">${c}</button>`).join('');
-  const list = MAJOR.slice(0, 30);
-  const start = majorCat === '全部' ? 0 : list.findIndex(x => 1) ;
+  const list = MAJOR.filter(([en]) => majorCat === '全部' || MAJOR_CAT[en] === majorCat);
   document.getElementById('majorList').innerHTML = list.map(([en, cn, ex]) => `
     <div class="v"><div class="en">${en}</div>
       <div><div class="cn">${cn}</div>${ex?`<div class="cn" style="font-size:12px;opacity:.8">${ex}</div>`:''}</div>
-    </div>`).join('');
+    </div>`).join('') || '<div class="empty">该分类暂无词汇</div>';
 }
 function setMajor(c){ majorCat = c; renderMajor(); }
 

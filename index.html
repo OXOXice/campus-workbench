@@ -286,8 +286,30 @@ footer{text-align:center;font-size:12px;color:#9aa8a0;padding:22px 0 0}
 <script>
 const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  set(k, v){
+    try{ localStorage.setItem(k, JSON.stringify(v)); return true; }
+    catch(e){ storageWarn(); return false; }   // 无痕模式 / 空间已满：让用户知道没存上
+  }
 };
+
+/* 所有用户输入在拼进 innerHTML 前必须过这里，否则课程名里写 <img onerror=...> 就会执行 */
+function esc(v){
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let storageWarned = false;
+function storageWarn(){
+  if(storageWarned) return;
+  storageWarned = true;
+  const t = document.createElement('div');
+  t.textContent = '浏览器拒绝写入本地存储（无痕模式或空间已满），本次修改不会被保存';
+  t.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);' +
+    'background:#7a2b28;color:#fff;font-size:13px;line-height:1.5;padding:10px 16px;' +
+    'border-radius:10px;z-index:99;max-width:86%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.22)';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 6000);
+}
 const WD = ['','周一','周二','周三','周四','周五','周六','周日'];
 
 /* ---------- 种子数据 ---------- */
@@ -331,11 +353,16 @@ const seedPkg = [
   {id:2, code:'2-1-0311', station:'顺丰驿站', phone:'0192', done:true, ts:Date.now()-86400000}
 ];
 
+/* datetime-local 需要"本地时间"字符串；用 toISOString 会转成 UTC（差 8 小时） */
+function localIso(d){
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 function nextIso(dayOffset, hh, mm){
   const d = new Date();
   d.setDate(d.getDate() + dayOffset);
   d.setHours(hh, mm, 0, 0);
-  return d.toISOString().slice(0,16);
+  return localIso(d);
 }
 
 let courses = LS.get('wb_courses', seedCourses);
@@ -350,17 +377,22 @@ function save(){
 }
 
 /* ---------- 工具 ---------- */
-const today = new Date();
-const dow = today.getDay() === 0 ? 7 : today.getDay();
-document.getElementById('todayLabel').textContent =
-  `${today.getFullYear()} 年 ${today.getMonth()+1} 月 ${today.getDate()} 日`;
-document.getElementById('weekLabel').textContent = '· ' + WD[dow];
+function todayDow(){ const d = new Date().getDay(); return d === 0 ? 7 : d; }
+function nowMin(){ const d = new Date(); return d.getHours()*60 + d.getMinutes(); }
 
-function nowMin(){ return today.getHours()*60 + today.getMinutes(); }
+function refreshHeader(){
+  const d = new Date();
+  document.getElementById('todayLabel').textContent =
+    `${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日`;
+  document.getElementById('weekLabel').textContent = '· ' + WD[todayDow()];
+}
+refreshHeader();
 function toMin(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
 function weekNo(){
-  const start = new Date(today.getFullYear(), 8, 1);
-  return Math.floor((today - start) / 604800000) + 1;
+  const now = new Date();
+  const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;  // 8 = 九月
+  const start = new Date(y, 8, 1);
+  return Math.floor((now - start) / 604800000) + 1;
 }
 function activeWeek(c){
   const w = weekNo() % 2; // 1 单 0 双
@@ -373,7 +405,7 @@ function activeWeek(c){
 function renderToday(){
   const list = document.getElementById('todayList');
   const cur = nowMin();
-  const items = courses.filter(c => c.day === dow && activeWeek(c))
+  const items = courses.filter(c => c.day === todayDow() && activeWeek(c))
                        .sort((a,b) => toMin(a.time) - toMin(b.time));
   if(!items.length){
     list.innerHTML = '<div class="empty">今天没有课，安排点自己的事吧 🌿</div>';
@@ -383,10 +415,10 @@ function renderToday(){
     list.innerHTML = items.map((c,i) => {
       const near = i === nextIdx && toMin(c.time) - cur <= 60;
       return `<div class="item ${near?'next':''}">
-        <div class="time">${c.time}</div>
+        <div class="time">${esc(c.time)}</div>
         <div class="body">
-          <div class="title">${c.name} ${near?'<span class="badge">即将上课</span>':''}</div>
-          <div class="meta">${c.room} · ${c.teacher} · ${c.week==='all'?'每周':(c.week==='odd'?'单周':'双周')}</div>
+          <div class="title">${esc(c.name)} ${near?'<span class="badge">即将上课</span>':''}</div>
+          <div class="meta">${esc(c.room)} · ${esc(c.teacher)} · ${c.week==='all'?'每周':(c.week==='odd'?'单周':'双周')}</div>
         </div>
       </div>`;
     }).join('');
@@ -409,10 +441,10 @@ function renderCourses(){
     html += `<div style="margin-bottom:14px"><div class="badge grey" style="margin-bottom:8px">${WD[d]}</div>`;
     byDay[d].sort((a,b)=>toMin(a.time)-toMin(b.time)).forEach(c => {
       html += `<div class="item" style="margin-bottom:8px">
-        <div class="time">${c.time}</div>
+        <div class="time">${esc(c.time)}</div>
         <div class="body">
-          <div class="title">${c.name}</div>
-          <div class="meta">${c.room} · ${c.teacher} · ${c.week==='all'?'每周':(c.week==='odd'?'单周':'双周')}</div>
+          <div class="title">${esc(c.name)}</div>
+          <div class="meta">${esc(c.room)} · ${esc(c.teacher)} · ${c.week==='all'?'每周':(c.week==='odd'?'单周':'双周')}</div>
         </div>
         <button class="btn ghost mini" onclick="delCourse(${c.id})">删除</button>
       </div>`;
@@ -434,13 +466,13 @@ function renderPlaces(){
   const list = places.filter(p => placeCat === '全部' || p.cat === placeCat);
   document.getElementById('placeList').innerHTML = list.map(p => `
     <div class="item place" onclick="showPlace('${p.id}')">
-      <div class="ico">${p.ico}</div>
+      <div class="ico">${esc(p.ico)}</div>
       <div class="body">
-        <div class="nm">${p.nm}</div>
-        <div class="meta">${p.where} · 开放 ${p.open}</div>
-        <div class="meta">🚶 ${p.walk}</div>
+        <div class="nm">${esc(p.nm)}</div>
+        <div class="meta">${esc(p.where)} · 开放 ${esc(p.open)}</div>
+        <div class="meta">🚶 ${esc(p.walk)}</div>
       </div>
-      <span class="badge">${p.cat}</span>
+      <span class="badge">${esc(p.cat)}</span>
     </div>`).join('');
 }
 function setCat(c){ placeCat = c; renderPlaces(); }
@@ -449,9 +481,9 @@ function showPlace(id){
   document.getElementById('mName').textContent = p.nm;
   document.getElementById('mCat').textContent = p.cat;
   document.getElementById('mKv').innerHTML = `
-    <div>位置：<b>${p.where}</b></div>
-    <div>开放时间：<b>${p.open}</b></div>
-    <div>步行参考：<b>${p.walk}</b></div>`;
+    <div>位置：<b>${esc(p.where)}</b></div>
+    <div>开放时间：<b>${esc(p.open)}</b></div>
+    <div>步行参考：<b>${esc(p.walk)}</b></div>`;
   document.getElementById('modal').classList.add('on');
 }
 function closeModal(){ document.getElementById('modal').classList.remove('on'); }
@@ -476,8 +508,8 @@ function renderSocial(){
         ${d.getMonth()+1}/${d.getDate()}<br>${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}
       </div>
       <div class="body">
-        <div class="title">${s.title} ${tag}</div>
-        <div class="meta">${s.where}${s.who?' · '+s.who:''}${s.note?' · '+s.note:''}</div>
+        <div class="title">${esc(s.title)} ${tag}</div>
+        <div class="meta">${esc(s.where)}${s.who?' · '+esc(s.who):''}${s.note?' · '+esc(s.note):''}</div>
       </div>
       <button class="btn ghost mini" onclick="delSocial(${s.id})">删除</button>
     </div>`;
@@ -528,10 +560,10 @@ function renderPkg(){
   const arr = [...pkgs].sort((a,b) => a.done - b.done || b.ts - a.ts);
   document.getElementById('pkgList').innerHTML = arr.map(p => `
     <div class="item">
-      <div class="time" style="min-width:72px;font-size:12.5px">${p.code}</div>
+      <div class="time" style="min-width:72px;font-size:12.5px">${esc(p.code)}</div>
       <div class="body">
-        <div class="title">${p.station} ${p.done?'<span class="badge grey">已取</span>':'<span class="badge gold">待取</span>'}</div>
-        <div class="meta">${p.phone ? '手机尾号 '+p.phone : '无手机号'}</div>
+        <div class="title">${esc(p.station)} ${p.done?'<span class="badge grey">已取</span>':'<span class="badge gold">待取</span>'}</div>
+        <div class="meta">${p.phone ? '手机尾号 '+esc(p.phone) : '无手机号'}</div>
       </div>
       <button class="btn ghost mini" onclick="togglePkg(${p.id})">${p.done?'撤销':'标记已取'}</button>
     </div>`).join('') || '<div class="empty">没有快递记录</div>';
@@ -598,6 +630,12 @@ document.getElementById('modal').addEventListener('click', e => {
 
 renderToday(); renderCourses(); renderPlaces();
 renderSocial(); renderGrades(); renderPkg();
+
+/* 页面开着过夜时，"今天"要跟着变 */
+setInterval(() => { refreshHeader(); renderToday(); }, 60000);
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible'){ refreshHeader(); renderToday(); }
+});
 
 /* URL parameter -> open a tab directly (for screenshots / sharing) */
 (function(){
