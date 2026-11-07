@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<title>四级学习助手 · 倒计时 / 单词书 / 真题 / 作文 / 错题本</title>
+<style>
+:root{--g:#16a34a;--gd:#15803d;--gl:#ecfdf5;--gb:#bbf7d0;--ink:#0f172a;--mu:#64748b;--ln:#e9eef3}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#fff}
+body{color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:14px 14px 34px}
+.wrap{max-width:960px;margin:0 auto}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 14px rgba(22,163,74,.28)}
+h1{margin:0;font-size:17px}
+.sub{margin:2px 0 0;font-size:12px;color:var(--mu)}
+.tag{font-size:11px;color:var(--gd);background:var(--gl);border:1px solid var(--gb);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.nav{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 12px;position:sticky;top:0;background:#fff;z-index:6}
+.nav::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid var(--ln);background:#fff;color:var(--mu);font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.tab.on{background:var(--g);border-color:var(--g);color:#fff;box-shadow:0 6px 14px rgba(22,163,74,.24)}
+.view{display:none}
+.view.on{display:block}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:820px){.grid{grid-template-columns:1.05fr .95fr}}
+.card{background:#fff;border:1px solid var(--ln);border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(15,23,42,.05)}
+.card+.card{margin-top:12px}
+.card.count{background:linear-gradient(160deg,#f2fdf6,#fff 62%);border-color:#d7f0e1}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.k{font-size:13px;color:var(--mu);font-weight:600}
+.mini{border:1px solid var(--ln);background:#fff;color:var(--mu);font:inherit;font-size:12px;padding:5px 11px;border-radius:999px;cursor:pointer}
+.mini:hover{color:var(--gd);border-color:var(--gb);background:var(--gl)}
+.big{display:flex;align-items:baseline;gap:7px;margin:12px 0 2px}
+.num{font-size:clamp(46px,13vw,66px);line-height:1;font-weight:800;color:var(--g);letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.unit{font-size:16px;font-weight:700;color:var(--gd)}
+.dateline{font-size:13px;color:var(--mu)}
+.dateline b{color:var(--ink)}
+.hms{margin-top:10px;display:inline-block;font-size:12.5px;color:var(--gd);background:var(--gl);border:1px solid var(--gb);padding:5px 11px;border-radius:999px;font-variant-numeric:tabular-nums}
+.editbox{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px dashed var(--ln);padding-top:12px}
+input[type=date]{font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--ln);border-radius:10px;color:var(--ink);min-width:150px;outline:none;background:#fff}
+input[type=date]:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+.btn{font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;border:1px solid transparent;cursor:pointer}
+.btn.p{background:var(--g);color:#fff}.btn.p:hover{background:var(--gd)}
+.btn.g{background:#fff;border-color:var(--ln);color:var(--mu)}.btn.g:hover{border-color:var(--gb);color:var(--gd)}
+.err{font-size:12px;color:#ef4444}
+.pill{font-size:12px;color:var(--gd);background:var(--gl);border:1px solid var(--gb);border-radius:999px;padding:4px 11px;white-space:nowrap}
+.chk{margin:14px 0 13px;width:100%;border:0;border-radius:16px;padding:17px;font:inherit;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 10px 22px rgba(22,163,74,.28);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:transform .15s,box-shadow .2s}
+.chk:hover{box-shadow:0 12px 26px rgba(22,163,74,.34)}
+.chk:active{transform:scale(.985)}
+.chk.done{background:var(--gl);color:var(--gd);border:1.5px solid var(--gb);box-shadow:none;cursor:default}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:0 0 13px}
+.day{display:flex;flex-direction:column;align-items:center;gap:5px}
+.dot{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#94a3b8;background:#f6f8fa;border:1px solid #eef2f6}
+.day.on .dot{background:var(--g);border-color:var(--g);color:#fff}
+.day.today .dot{box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.wl{font-size:10px;color:#94a3b8}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--ln);padding-top:12px}
+.stat{text-align:center}
+.stat b{display:block;font-size:18px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--mu)}
+.undo{margin:10px 0 0;text-align:center;min-height:15px}
+.undo button{background:none;border:0;font:inherit;font-size:12px;color:#94a3b8;text-decoration:underline;cursor:pointer}
+.undo button:hover{color:#ef4444}
+.bar{height:8px;border-radius:999px;background:#eef2f6;overflow:hidden;margin:10px 0 6px}
+.bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width .35s ease}
+.note{font-size:12.5px;color:var(--mu);line-height:1.7;margin:0}
+.wcard{border:1px solid var(--ln);border-radius:16px;padding:14px;margin-bottom:10px;background:#fff}
+.wcard.unknown{border-color:#fdba74;background:#fffdf9}
+.wtop{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.wtop b{font-size:19px}
+.wtop i{font-style:normal;color:var(--mu);font-size:12.5px}
+.badge{font-size:11px;color:#c2410c;background:#fff7ed;border:1px solid #fdba74;border-radius:999px;padding:2px 8px}
+.wpos{font-size:13px;margin:5px 0 0}
+.wex{font-size:12.5px;color:var(--mu);margin:6px 0 0;line-height:1.65}
+.wex span{color:#94a3b8}
+.wact{display:flex;gap:8px;margin-top:10px}
+.wact button{flex:1;font:inherit;font-size:13px;font-weight:600;padding:9px;border-radius:10px;border:1px solid var(--ln);background:#fff;color:var(--mu);cursor:pointer}
+.wact .k.on{background:var(--gl);border-color:var(--gb);color:var(--gd)}
+.wact .u.on{background:#fff7ed;border-color:#fdba74;color:#c2410c}
+.passage{font-size:13.5px;line-height:1.85;color:#334155;background:#f8fafb;border-radius:12px;padding:13px;margin:12px 0}
+.qcard{border-top:1px dashed var(--ln);padding:12px 0}
+.qcard:first-child{border-top:0;padding-top:0}
+.qtxt{font-size:14px;line-height:1.7;margin:0 0 10px}
+.qtxt b{color:var(--gd)}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:13.5px;padding:11px 13px;border:1px solid var(--ln);background:#fff;border-radius:11px;margin-bottom:8px;cursor:pointer;color:var(--ink);line-height:1.5}
+.opt:hover:not(:disabled){border-color:var(--gb);background:var(--gl)}
+.opt.ok{border-color:var(--g);background:var(--gl);color:var(--gd);font-weight:600}
+.opt.no{border-color:#fca5a5;background:#fef2f2;color:#b91c1c;font-weight:600}
+.opt:disabled{cursor:default}
+.ana{margin-top:2px;font-size:12.5px;line-height:1.75;color:var(--mu);background:#f8fafb;border-left:3px solid var(--gb);border-radius:0 10px 10px 0;padding:9px 12px}
+.ana b{color:var(--gd)}
+details{border:1px solid var(--ln);border-radius:12px;margin-bottom:8px;overflow:hidden}
+summary{cursor:pointer;padding:11px 13px;font-size:13.5px;font-weight:600;color:var(--gd);background:#f8fdfa;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';float:right;color:#94a3b8;font-weight:400}
+details[open] summary::after{content:'-'}
+.dbody{padding:11px 13px 13px;font-size:13px;line-height:1.8;color:#334155}
+.dbody p{margin:0 0 8px}
+.dbody p:last-child{margin-bottom:0}
+.dbody b{color:var(--gd)}
+.frame{background:#f8fdfa;border:1px dashed var(--gb);border-radius:10px;padding:11px 12px;margin-bottom:10px;font-size:12.8px;line-height:1.85}
+.frame span{color:#94a3b8}
+.wrong{border:1px solid var(--ln);border-radius:14px;padding:13px;margin-bottom:10px}
+.wrong h4{margin:0 0 7px;font-size:13.5px;line-height:1.6}
+.wrong .mine{font-size:12.5px;color:#b91c1c;margin:0 0 3px}
+.wrong .right{font-size:12.5px;color:var(--gd);margin:0 0 6px}
+.foot{margin:16px 0 0;text-align:center;font-size:11px;color:#a8b3c0;line-height:1.8}
+.empty{text-align:center;padding:26px 10px;color:#94a3b8;font-size:13px;line-height:1.8}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.035)}100%{transform:scale(1)}}
+.chk.pop{animation:pop .45s ease}
+@media (prefers-reduced-motion:reduce){.chk.pop{animation:none}.bar>i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="brand">
+      <div class="logo">四</div>
+      <div><h1>四级学习助手</h1><p class="sub">倒计时 · 单词书 · 真题 · 作文 · 错题本</p></div>
+    </div>
+    <span class="tag">无需登录</span>
+  </div>
+
+  <div class="nav">
+    <button class="tab on" data-v="home" type="button">首页</button>
+    <button class="tab" data-v="words" type="button">单词书</button>
+    <button class="tab" data-v="exam" type="button">真题练习</button>
+    <button class="tab" data-v="writing" type="button">作文模板</button>
+    <button class="tab" data-v="wrong" type="button">错题本</button>
+  </div>
+
+  <section class="view on" id="view-home">
+    <div class="grid">
+      <section class="card count">
+        <div class="row"><span class="k">距离四级考试还有</span>
+          <button class="mini" id="editBtn" type="button">修改日期</button></div>
+        <div class="big"><span class="num" id="days">--</span><span class="unit">天</span></div>
+        <div class="dateline">考试时间：<b id="examDate">—</b> 09:00</div>
+        <div class="hms" id="hms">—</div>
+        <div class="editbox" id="editBox" hidden>
+          <input type="date" id="dateInput" aria-label="选择考试日期">
+          <button class="btn p" id="saveBtn" type="button">保存</button>
+          <button class="btn g" id="resetBtn" type="button">复原默认</button>
+          <button class="btn g" id="cancelBtn" type="button">取消</button>
+          <span class="err" id="err"></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row"><span class="k">每日单词打卡</span>
+          <span class="pill">连续 <b id="streak">0</b> 天</span></div>
+        <button class="chk" id="chkBtn" type="button"><span id="chkIc">✓</span><span id="chkTxt">今日打卡</span></button>
+        <div class="week" id="week"></div>
+        <div class="stats">
+          <div class="stat"><b id="total">0</b><span>累计打卡</span></div>
+          <div class="stat"><b id="month">0</b><span>本月打卡</span></div>
+          <div class="stat"><b id="best">0</b><span>最长连续</span></div>
+        </div>
+        <p class="undo"><button id="undoBtn" type="button" hidden>点错了？撤销今日打卡</button></p>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="row"><span class="k">今日单词</span><span class="tag" id="hTag">0 / 20</span></div>
+      <div class="bar"><i id="hBar" style="width:0"></i></div>
+      <p class="note" id="hSub">今天有 20 个词等你过一遍</p>
+      <button class="btn p" id="hGo" type="button" style="margin-top:11px">去单词书</button>
+    </section>
+    <p class="foot">数据只保存在你自己的浏览器里，无需登录、不上传<br>默认考试日期按历年规律估算（6月／12月第二个周六），请以官方公告为准，可自行修改</p>
+  </section>
+
+  <section class="view" id="view-words">
+    <section class="card">
+      <div class="row"><span class="k">今日单词 · 20 个</span><span class="pill" id="wProg">0 / 20</span></div>
+      <div class="bar"><i id="wBar" style="width:0"></i></div>
+      <p class="note" id="wSub">已掌握 0 词 · 待复习 0 词</p>
+    </section>
+    <div id="wList" style="margin-top:12px"></div>
+    <p class="foot">标“不认识”的词会进入复习队列，第二天优先排在最前面，直到你标为“认识”</p>
+  </section>
+
+  <section class="view" id="view-exam">
+    <section class="card">
+      <div class="row"><span class="k">单项选择 · 5 题</span><span class="pill" id="cScore">已答 0 / 5</span></div>
+      <div id="choiceBox" style="margin-top:12px"></div>
+      <button class="btn g" id="cReset" type="button">重做本组</button>
+    </section>
+    <section class="card">
+      <div class="row"><span class="k">阅读理解 · 1 篇 5 题</span><span class="pill" id="rScore">已答 0 / 5</span></div>
+      <p class="passage" id="passage"></p>
+      <div id="readBox"></div>
+      <button class="btn g" id="rReset" type="button">重做本组</button>
+    </section>
+    <p class="foot">选完立刻判分并显示解析，答错自动收进错题本</p>
+  </section>
+
+  <section class="view" id="view-writing">
+    <section class="card">
+      <p class="note">四类题型各一套万能框架 + 两篇范文。框架里的横线换成你自己的内容即可，开头结尾直接背。</p>
+    </section>
+    <div id="writeList" style="margin-top:12px"></div>
+  </section>
+
+  <section class="view" id="view-wrong">
+    <section class="card">
+      <div class="row"><span class="k">错题掌握进度</span><span class="pill" id="w2Pill">0%</span></div>
+      <div class="bar"><i id="w2Bar" style="width:0"></i></div>
+      <p class="note" id="w2Sub">还没有错题</p>
+    </section>
+    <div id="wrongList" style="margin-top:12px"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  /* ========== 存储 ========== */
+  var $=function(id){return document.getElementById(id)};
+  function get(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
+  function set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+  var S={
+    exam:get('c4_exam',''),
+    log:get('c4_log',[]),
+    marks:get('c4_marks',{}),
+    today:get('c4_today',null),
+    quiz:get('c4_quiz',{}),
+    wrong:get('c4_wrong',[]),
+    wrongTotal:get('c4_wrong_total',0)
+  };
+  if(!Array.isArray(S.log))S.log=[];
+  if(!Array.isArray(S.wrong))S.wrong=[];
+  if(typeof S.marks!=='object'||!S.marks)S.marks={};
+  function pad(n){return n<10?'0'+n:''+n}
+  function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function pdate(s){var a=String(s).split('-');return new Date(+a[0],+a[1]-1,+a[2])}
+  function okdate(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s||''))}
+  var WK=['日','一','二','三','四','五','六'];
+  function secondSat(y,m){var d=new Date(y,m,1);return new Date(y,m,1+((6-d.getDay()+7)%7)+7)}
+  function defExam(){var t=new Date(),y=t.getFullYear(),d0=new Date(y,t.getMonth(),t.getDate());
+    var c=[secondSat(y,5),secondSat(y,11)];
+    for(var i=0;i<c.length;i++){if(c[i].getTime()>=d0.getTime())return c[i]}
+    return secondSat(y+1,5)}
+  if(!okdate(S.exam)){S.exam=ymd(defExam());set('c4_exam',S.exam)}
+  var seen={};
+  S.log=S.log.filter(function(x){if(!okdate(x)||seen[x])return false;seen[x]=1;return true}).sort();
+
+  /* ========== 词库：80 个四级核心词 ========== */
+  var BANK=[
+  ['abandon','/əˈbændən/','v. 放弃；抛弃；离弃','They had to abandon the plan.','他们不得不放弃这个计划。'],
+  ['absorb','/əbˈsɔːb/','v. 吸收；使全神贯注','Plants absorb water through roots.','植物通过根部吸收水分。'],
+  ['academic','/ˌækəˈdemɪk/','adj. 学术的；学业的','Her academic performance improved.','她的学业表现进步了。'],
+  ['accompany','/əˈkʌmpəni/','v. 陪伴；伴随','I will accompany you to the library.','我陪你去图书馆。'],
+  ['accurate','/ˈækjərət/','adj. 准确的；精确的','Make sure the data is accurate.','确保数据准确。'],
+  ['achieve','/əˈtʃiːv/','v. 达到；实现；完成','You can achieve your goal with practice.','坚持练习就能实现目标。'],
+  ['adapt','/əˈdæpt/','v. 适应；改编','It took him a month to adapt.','他花了一个月才适应。'],
+  ['adequate','/ˈædɪkwət/','adj. 足够的；适当的','Get adequate sleep before the exam.','考前要睡够。'],
+  ['adjust','/əˈdʒʌst/','v. 调整；调节；适应','You may need to adjust your plan.','你可能需要调整计划。'],
+  ['advocate','/ˈædvəkeɪt/','v. 提倡；主张 n. 拥护者','Teachers advocate learning words in sentences.','老师提倡在句子里记词。'],
+  ['alternative','/ɔːlˈtɜːnətɪv/','n. 替代方案 adj. 可替代的','We need an alternative solution.','我们需要一个替代方案。'],
+  ['analyze','/ˈænəlaɪz/','v. 分析；解析','Try to analyze your mistakes.','试着分析你的错误。'],
+  ['apparent','/əˈpærənt/','adj. 明显的；表面上的','It became apparent that he was nervous.','很明显他很紧张。'],
+  ['appreciate','/əˈpriːʃieɪt/','v. 欣赏；感激；理解','I really appreciate your help.','非常感谢你的帮助。'],
+  ['approach','/əˈprəʊtʃ/','n. 方法；途径 v. 接近','This approach works well.','这个方法很管用。'],
+  ['appropriate','/əˈprəʊpriət/','adj. 合适的；恰当的','Choose appropriate words.','选择恰当的词。'],
+  ['assume','/əˈsjuːm/','v. 假设；认为；承担','Do not assume without reading.','不读文章别想当然。'],
+  ['attach','/əˈtætʃ/','v. 附上；系上','Please attach your photo.','请附上你的照片。'],
+  ['attitude','/ˈætɪtjuːd/','n. 态度；看法','A positive attitude matters.','积极的态度很重要。'],
+  ['available','/əˈveɪləbl/','adj. 可获得的；有空的','The room is available until ten.','这间房可以用到十点。'],
+  ['aware','/əˈweə(r)/','adj. 意识到的；知道的','Be aware of the time limit.','注意考试的时限。'],
+  ['benefit','/ˈbenɪfɪt/','n. 好处 v. 受益','You will benefit from reading.','阅读会让你受益。'],
+  ['capable','/ˈkeɪpəbl/','adj. 有能力的','She is capable of passing.','她有能力通过。'],
+  ['challenge','/ˈtʃælɪndʒ/','n. 挑战 v. 质疑','Listening is a big challenge.','听力是很大的挑战。'],
+  ['circumstance','/ˈsɜːkəmstəns/','n. 情况；环境','Under no circumstances give up.','无论如何都不要放弃。'],
+  ['combine','/kəmˈbaɪn/','v. 结合；联合','Combine study with exercise.','把学习和锻炼结合起来。'],
+  ['comment','/ˈkɒment/','n./v. 评论','He made no comment on it.','他对此没有评论。'],
+  ['communicate','/kəˈmjuːnɪkeɪt/','v. 交流；沟通','We communicate by email.','我们用邮件沟通。'],
+  ['compare','/kəmˈpeə(r)/','v. 比较；对比','Compare the two answers.','比较这两个答案。'],
+  ['compete','/kəmˈpiːt/','v. 竞争；比赛','They compete for the scholarship.','他们竞争奖学金。'],
+  ['complex','/ˈkɒmpleks/','adj. 复杂的','The problem is quite complex.','这个问题相当复杂。'],
+  ['concentrate','/ˈkɒnsntreɪt/','v. 集中；专心','Concentrate on one task.','一次专心做一件事。'],
+  ['conclude','/kənˈkluːd/','v. 得出结论；结束','We can conclude that it works.','我们可以得出结论：它是有效的。'],
+  ['confident','/ˈkɒnfɪdənt/','adj. 自信的','Be confident in the exam.','考试时要自信。'],
+  ['confirm','/kənˈfɜːm/','v. 确认；证实','Please confirm the time.','请确认时间。'],
+  ['conflict','/ˈkɒnflɪkt/','n. 冲突 v. 抵触','The two ideas conflict.','这两个想法相冲突。'],
+  ['consequence','/ˈkɒnsɪkwəns/','n. 结果；后果','Think about the consequences.','想想后果。'],
+  ['consider','/kənˈsɪdə(r)/','v. 考虑；认为','Consider all the options.','考虑所有选项。'],
+  ['consist','/kənˈsɪst/','v. 由……组成；在于','The team consists of five members.','这个团队由五名成员组成。'],
+  ['constant','/ˈkɒnstənt/','adj. 不断的；恒定的','Constant practice brings progress.','持续练习带来进步。'],
+  ['consume','/kənˈsjuːm/','v. 消耗；消费','The app consumes much battery.','这个应用很耗电。'],
+  ['contribute','/kənˈtrɪbjuːt/','v. 贡献；促成','Exercise contributes to good sleep.','锻炼有助于睡眠。'],
+  ['convenient','/kənˈviːniənt/','adj. 方便的','Online learning is convenient.','在线学习很方便。'],
+  ['convince','/kənˈvɪns/','v. 使信服；说服','He convinced me to join.','他说服我加入。'],
+  ['cooperate','/kəʊˈɒpəreɪt/','v. 合作；配合','The two sides cooperated well.','双方合作得很好。'],
+  ['crucial','/ˈkruːʃl/','adj. 关键的；至关重要的','Vocabulary is crucial for CET-4.','词汇对四级很关键。'],
+  ['curious','/ˈkjʊəriəs/','adj. 好奇的','She is curious about everything.','她对一切很好奇。'],
+  ['decline','/dɪˈklaɪn/','v./n. 下降；拒绝','The number declined sharply.','数量急剧下降。'],
+  ['define','/dɪˈfaɪn/','v. 定义；界定','Define the word first.','先给这个词下定义。'],
+  ['demand','/dɪˈmɑːnd/','n./v. 需求；要求','Demand for online courses is rising.','网课需求在上升。'],
+  ['demonstrate','/ˈdemənstreɪt/','v. 证明；演示','The study demonstrates a clear link.','研究证明了明显的关联。'],
+  ['depend','/dɪˈpend/','v. 依靠；取决于','It depends on your effort.','这取决于你的努力。'],
+  ['deserve','/dɪˈzɜːv/','v. 值得；应得','You deserve a break.','你该休息一下了。'],
+  ['despite','/dɪˈspaɪt/','prep. 尽管','Despite the rain, he ran.','尽管下雨，他还是跑了。'],
+  ['determine','/dɪˈtɜːmɪn/','v. 决定；确定','Effort determines the result.','努力决定结果。'],
+  ['develop','/dɪˈveləp/','v. 发展；培养','Develop a habit of reading.','养成阅读的习惯。'],
+  ['differ','/ˈdɪfə(r)/','v. 不同；相异','Opinions differ on this issue.','对这个问题意见不一。'],
+  ['distinguish','/dɪˈstɪŋɡwɪʃ/','v. 区分；辨别','Distinguish fact from opinion.','区分事实与观点。'],
+  ['distribute','/dɪˈstrɪbjuːt/','v. 分配；分发','Papers were distributed in class.','课上发了试卷。'],
+  ['efficient','/ɪˈfɪʃnt/','adj. 高效的','This method is more efficient.','这个方法更高效。'],
+  ['eliminate','/ɪˈlɪmɪneɪt/','v. 消除；排除','Eliminate wrong options first.','先排除错误选项。'],
+  ['emphasize','/ˈemfəsaɪz/','v. 强调','The teacher emphasized practice.','老师强调了练习。'],
+  ['encourage','/ɪnˈkʌrɪdʒ/','v. 鼓励；促进','My roommate encouraged me.','室友鼓励了我。'],
+  ['ensure','/ɪnˈʃʊə(r)/','v. 确保；保证','Ensure you arrive on time.','确保准时到达。'],
+  ['essential','/ɪˈsenʃl/','adj. 必要的；本质的','Sleep is essential for memory.','睡眠对记忆必不可少。'],
+  ['establish','/ɪˈstæblɪʃ/','v. 建立；确立','Establish a study routine.','建立固定的学习节奏。'],
+  ['estimate','/ˈestɪmeɪt/','v./n. 估计','Experts estimate the cost.','专家估计了成本。'],
+  ['evaluate','/ɪˈvæljueɪt/','v. 评估；评价','Evaluate your progress monthly.','每月评估你的进步。'],
+  ['eventually','/ɪˈventʃuəli/','adv. 最终','He eventually passed the exam.','他最终通过了考试。'],
+  ['evidence','/ˈevɪdəns/','n. 证据','There is clear evidence.','有明确的证据。'],
+  ['exhibit','/ɪɡˈzɪbɪt/','v. 展出；表现 n. 展品','The museum exhibits old books.','博物馆展出古书。'],
+  ['expand','/ɪkˈspænd/','v. 扩大；扩展','Expand your vocabulary daily.','每天扩充词汇量。'],
+  ['familiar','/fəˈmɪliə(r)/','adj. 熟悉的','The word looks familiar.','这个词看着眼熟。'],
+  ['flexible','/ˈfleksəbl/','adj. 灵活的','Make a flexible plan.','制定灵活的计划。'],
+  ['focus','/ˈfəʊkəs/','v./n. 集中；焦点','Focus on the key sentence.','关注关键句。'],
+  ['frequent','/ˈfriːkwənt/','adj. 频繁的','Frequent review is necessary.','频繁复习是必要的。'],
+  ['generate','/ˈdʒenəreɪt/','v. 产生；引起','Hard work generates results.','努力会产生结果。'],
+  ['guarantee','/ˌɡærənˈtiː/','v./n. 保证','Practice guarantees progress.','练习保证进步。'],
+  ['identify','/aɪˈdentɪfaɪ/','v. 识别；确认','Identify your weak points.','找出你的薄弱点。'],
+  ['impact','/ˈɪmpækt/','n./v. 影响；冲击','Phones have a big impact on sleep.','手机对睡眠影响很大。']
+  ];
+
+  /* ========== 真题数据 ========== */
+  var CHOICE=[
+    {id:'c1',q:'The new library ______ to the public next month.',opts:['opens','will open','is opened','will be opened'],ans:3,
+     ana:'主语 library 与 open 是被动关系，且时间状语 next month 表将来，故用一般将来时的被动语态 will be opened。'},
+    {id:'c2',q:"I'd rather you ______ tomorrow instead of today.",opts:['come','came','will come','coming'],ans:1,
+     ana:'would rather 后接从句时用虚拟语气，谓语用一般过去时表示对现在或将来的愿望，故选 came。'},
+    {id:'c3',q:'The company had to ______ the plan because of the budget cut.',opts:['abandon','absorb','adapt','adopt'],ans:0,
+     ana:'abandon 意为“放弃”；absorb 吸收，adapt 适应，adopt 采纳。因预算削减只能“放弃”计划。'},
+    {id:'c4',q:'Not until he failed the exam ______ the importance of hard work.',opts:['he realized','did he realize','he did realize','realized he'],ans:1,
+     ana:'Not until 置于句首时主句要部分倒装，把助动词 did 提到主语前，故为 did he realize。'},
+    {id:'c5',q:"The professor's lecture was so ______ that many students fell asleep.",opts:['boring','bored','bore','boredom'],ans:0,
+     ana:'修饰物（lecture）用 -ing 形容词 boring“令人厌烦的”；bored 用于修饰人，bore 是动词，boredom 是名词。'}
+  ];
+  var PASSAGE='College students often find it hard to get enough sleep. A recent survey of 2,000 first-year students shows that nearly 60 percent go to bed after midnight, and their average sleeping time is only six and a half hours. The main reason, according to the report, is not homework but mobile phones. Many students say they check short videos or chat with friends "just for a few minutes", and then find it is already two in the morning.\n\nResearchers warn that the lack of sleep affects memory and attention, which are exactly what students need in class. Some universities have started to act. One college turns off the wifi in dormitories at 11 p.m., and another offers morning running classes that reward students with free breakfast. Both measures have helped a little, but experts believe the key is to help students build self-control rather than to control them from outside.';
+  var READING=[
+    {id:'r1',q:'According to the report, what is the main cause of students going to bed late?',opts:['Heavy homework','Part-time jobs','Mobile phone use','Noisy dormitories'],ans:2,
+     ana:'第一段明确写道“The main reason ... is not homework but mobile phones”，故为手机使用。'},
+    {id:'r2',q:'Lack of sleep may harm students\u2019 ______.',opts:['memory and attention','eyesight and height','appetite and weight','pronunciation and grammar'],ans:0,
+     ana:'第二段开头“the lack of sleep affects memory and attention”直接给出答案。'},
+    {id:'r3',q:'What does one college do at 11 p.m.?',opts:['It turns off the lights.','It cuts off the wifi.','It gives out breakfast.','It starts running classes.'],ans:1,
+     ana:'第二段“One college turns off the wifi in dormitories at 11 p.m.”，切断的是 wifi，不是电灯。'},
+    {id:'r4',q:'What can be inferred about the two measures?',opts:['They are completely useless.','They work perfectly.','They help to some extent.','They cost too much money.'],ans:2,
+     ana:'原文“Both measures have helped a little”说明有一定效果但有限，故选“在某种程度上有效”。'},
+    {id:'r5',q:'What do experts think is the key to the problem?',opts:['Stricter school rules','Students\u2019 self-control','More sleeping time','Less homework'],ans:1,
+     ana:'最后一句“the key is to help students build self-control”，专家强调学生自控力，而非外部管控。'}
+  ];
+
+  /* ========== 作文模板数据 ========== */
+  var WRITING=[
+  {name:'现象解释类',tag:'最常见题型',
+   frame:['<span>第一段 · 描述现象</span><br>Recently, ______ has become a common phenomenon on campus. According to a recent survey, ______.',
+          '<span>第二段 · 分析原因（三条）</span><br>Several factors contribute to this trend. To begin with, ______. What is more, ______. Last but not least, ______.',
+          '<span>第三段 · 我的看法</span><br>In my view, we should ______. Only by doing so can we ______.'],
+   essays:[
+    {t:'范文一：The Growing Number of Students Who Stay Up Late',
+     ps:['Nowadays, staying up late has become a common phenomenon among college students. According to a survey of 2,000 freshmen, nearly 60 percent go to bed after midnight, and most of them spend the time on their phones.',
+         'Several factors contribute to this trend. To begin with, short videos and mobile games are designed to hold our attention, so it is easy to lose track of time. What is more, many students put off their homework until the last minute. Last but not least, dormitory life makes it hard to keep a regular schedule when roommates are still awake.',
+         'In my view, we should set a fixed bedtime and put our phones away one hour before sleep. Only by doing so can we stay healthy and study efficiently.']},
+    {t:'范文二：Why More Students Choose to Study Online',
+     ps:['Nowadays, an increasing number of college students prefer to study online rather than in a classroom. According to a recent survey, over half of the students have taken at least one online course in the past year.',
+         'Several factors contribute to this trend. To begin with, online courses are flexible, which allows students to arrange their time freely. What is more, high-quality lectures from famous universities are now only one click away. Last but not least, the low cost makes online learning affordable for most students.',
+         'In my view, we should combine online resources with classroom study instead of replacing one with the other. Only by doing so can we make full use of both.']}
+   ]},
+  {name:'观点选择类',tag:'议论文',
+   frame:['<span>第一段 · 引出争论</span><br>When it comes to ______, opinions vary from person to person. Some people hold that ______, while others argue that ______.',
+          '<span>第二段 · 表明立场 + 两条理由</span><br>As far as I am concerned, I am in favor of ______. There are two reasons. For one thing, ______. For another, ______.',
+          '<span>第三段 · 总结</span><br>In conclusion, ______. Therefore, it is wise for us to ______.'],
+   essays:[
+    {t:'范文一：Should College Students Take Part-time Jobs?',
+     ps:['When it comes to taking part-time jobs, opinions vary from person to person. Some people hold that students should focus on study only, while others argue that a part-time job is a valuable lesson outside the classroom.',
+         'As far as I am concerned, I am in favor of working part-time. There are two reasons. For one thing, a part-time job teaches us how to communicate with different people, which no textbook can offer. For another, earning money by ourselves helps us understand the value of labor and makes us more independent.',
+         'In conclusion, a part-time job is worth trying as long as it does not take up too much study time. Therefore, it is wise for us to keep a balance between work and study.']},
+    {t:'范文二：Is It Better to Live in a Dormitory?',
+     ps:['When it comes to living arrangements in college, opinions vary from person to person. Some students prefer to rent an apartment outside, while others argue that the dormitory is the better choice.',
+         'As far as I am concerned, I am in favor of living in a dormitory. There are two reasons. For one thing, living with roommates is the first lesson in getting along with others, and it teaches us tolerance and cooperation. For another, the dormitory is close to classrooms and the library, which saves a great deal of time on the way.',
+         'In conclusion, the dormitory offers friendship and convenience that an apartment can hardly provide. Therefore, it is wise for us to value this experience during our college years.']}
+   ]},
+  {name:'图表描述类',tag:'看数字说话',
+   frame:['<span>第一段 · 描述图表</span><br>As is clearly shown in the chart, the number of ______ rose / fell from ______ in 20__ to ______ in 20__, with an increase / decrease of ______%.',
+          '<span>第二段 · 分析原因</span><br>There are several reasons for this change. First, ______. Second, ______.',
+          '<span>第三段 · 趋势与建议</span><br>In my opinion, this trend will continue in the near future. It is high time that we ______.'],
+   essays:[
+    {t:'范文一：Changes in the Time Students Spend on Reading',
+     ps:['As is clearly shown in the chart, the time that college students spend on paper reading fell from 8 hours a week in 2018 to 3 hours in 2023, with a decrease of more than 60 percent.',
+         'There are several reasons for this change. First, smartphones make short videos and social media far more attractive than printed pages. Second, heavy course work leaves students little spare time, so they prefer quick and easy information.',
+         'In my opinion, this trend will continue in the near future. It is high time that we set aside thirty minutes a day for deep reading, because only careful reading builds real thinking ability.']},
+    {t:'范文二：The Rise of Online Shopping Among Students',
+     ps:['As is clearly shown in the chart, the money that students spend online rose from 300 yuan a month in 2019 to 900 yuan in 2024, with an increase of 200 percent.',
+         'There are several reasons for this change. First, online platforms offer lower prices and far more choices than physical stores. Second, express delivery has become so fast that shopping online is almost as quick as going downstairs.',
+         'In my opinion, this trend will continue in the near future. It is high time that we made a monthly budget and learned to tell needs from wants.']}
+   ]},
+  {name:'书信类',tag:'应用文',
+   frame:['<span>称呼</span><br>Dear ______,',
+          '<span>第一段 · 写信目的</span><br>I am writing to ______ (apply for / complain about / suggest / express my thanks).',
+          '<span>第二段 · 具体说明</span><br>To be specific, ______. Besides, ______.',
+          '<span>第三段 · 期待回复</span><br>I would appreciate it if you could ______. Looking forward to your reply.',
+          '<span>落款</span><br>Yours sincerely,<br>Li Ming'],
+   essays:[
+    {t:'范文一：申请志愿者（Letter of Application）',
+     ps:['Dear Sir or Madam,',
+         'I am writing to apply for the volunteer position at the English Speech Contest to be held on December 15th in our university.',
+         'To be specific, I am a first-year student majoring in English and I have taken part in several speech contests myself, so I am familiar with the whole process. Besides, I am patient and good at communicating with others, which I believe is necessary for this job. I am available on weekends and can work from morning till evening.',
+         'I would appreciate it if you could give me this opportunity. Looking forward to your reply.',
+         'Yours sincerely,\nLi Ming']},
+    {t:'范文二：向图书馆提建议（Letter of Suggestion）',
+     ps:['Dear Mr. Wang,',
+         'I am writing to suggest some improvements to the reading room of our library, which is always crowded in the evening.',
+         'To be specific, many students cannot find a seat after seven o\u2019clock, while some seats are occupied by bags for hours. Besides, the reading room closes at nine, which is a little early for those who finish classes late. I suggest opening a second reading room on the third floor and extending the closing time to ten.',
+         'I would appreciate it if you could consider my suggestions. Looking forward to your reply.',
+         'Yours sincerely,\nLi Ming']}
+   ]}
+  ];
+
+  /* ========== 首页：倒计时 + 打卡 ========== */
+  function calcStreak(){
+    if(!S.log.length)return 0;
+    var s={};S.log.forEach(function(d){s[d]=1});
+    var d=new Date();
+    if(!s[ymd(d)])d=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1);
+    var n=0;while(s[ymd(d)]){n++;d=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1)}
+    return n}
+  function calcBest(){
+    if(!S.log.length)return 0;
+    var a=S.log.slice().sort(),best=1,cur=1;
+    for(var i=1;i<a.length;i++){
+      var df=Math.round((pdate(a[i])-pdate(a[i-1]))/86400000);
+      if(df===1){cur++;if(cur>best)best=cur}else if(df>1){cur=1}}
+    return best}
+  function tick(){
+    var ex=pdate(S.exam);
+    $('examDate').textContent=ex.getFullYear()+'年'+(ex.getMonth()+1)+'月'+ex.getDate()+'日 周'+WK[ex.getDay()];
+    var now=new Date(),d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    var days=Math.round((new Date(ex.getFullYear(),ex.getMonth(),ex.getDate())-d0)/86400000);
+    $('days').textContent=days<0?0:days;
+    var h=$('hms');
+    if(days<0){h.textContent='这一场已结束，点右上角设置下次考试';return}
+    var diff=new Date(ex.getFullYear(),ex.getMonth(),ex.getDate(),9,0,0)-now;
+    if(diff<=0){h.textContent='今天已经开考 · 稳住，正常发挥就好';return}
+    var hh=Math.floor(diff/3600000),mm=Math.floor(diff%3600000/60000),ss=Math.floor(diff%60000/1000);
+    h.textContent=(days===0?'今天开考 · ':'')+pad(hh)+' 小时 '+pad(mm)+' 分 '+pad(ss)+' 秒'}
+  function renderWeek(){
+    var t=new Date(),html='';
+    for(var i=6;i>=0;i--){
+      var d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i);
+      var on=S.log.indexOf(ymd(d))>=0;
+      html+='<div class="day'+(on?' on':'')+(i===0?' today':'')+'"><div class="dot">'+(on?'✓':d.getDate())+'</div><div class="wl">'+WK[d.getDay()]+'</div></div>'}
+    $('week').innerHTML=html}
+  function renderCheck(){
+    var done=S.log.indexOf(ymd(new Date()))>=0;
+    $('chkBtn').classList.toggle('done',done);
+    $('chkTxt').textContent=done?'今日已打卡':'今日打卡';
+    $('chkIc').textContent=done?'✓':'＋';
+    $('streak').textContent=calcStreak();
+    $('total').textContent=S.log.length;
+    var n=new Date(),pre=n.getFullYear()+'-'+pad(n.getMonth()+1);
+    $('month').textContent=S.log.filter(function(d){return d.indexOf(pre)===0}).length;
+    $('best').textContent=calcBest();
+    $('undoBtn').hidden=!done;
+    renderWeek()}
+
+  /* ========== 单词书 ========== */
+  function dayOfYear(){var d=new Date();return Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(d.getFullYear(),0,0))/86400000)}
+  function todayList(){
+    var t=ymd(new Date());
+    if(S.today&&S.today.date===t&&S.today.words&&S.today.words.length)return S.today.words;
+    var unknown=[],fresh=[];
+    BANK.forEach(function(w){
+      var m=S.marks[w[0]];
+      if(m==='u')unknown.push(w);
+      else if(!m)fresh.push(w)});
+    var list=[],used={};
+    function push(w){if(w&&!used[w[0]]&&list.length<20){used[w[0]]=1;list.push(w)}}
+    unknown.slice(0,8).forEach(push);
+    var start=dayOfYear()%Math.max(fresh.length,1);
+    for(var i=0;i<fresh.length;i++)push(fresh[(start+i)%fresh.length]);
+    for(var j=0;j<BANK.length;j++)push(BANK[(start+j)%BANK.length]);
+    S.today={date:t,words:list};set('c4_today',S.today);
+    return list}
+  function renderWords(){
+    var list=todayList(),known=0,unk=0;
+    list.forEach(function(w){
+      var m=S.marks[w[0]];
+      if(m==='k')known++;else if(m==='u')unk++});
+    $('wProg').textContent=known+' / '+list.length;
+    $('wBar').style.width=(list.length?known/list.length*100:0)+'%';
+    $('wSub').textContent='已掌握 '+known+' 词 · 待复习 '+unk+' 词';
+    var html='';
+    list.forEach(function(w){
+      var m=S.marks[w[0]]||'';
+      html+='<div class="wcard'+(m==='u'?' unknown':'')+'">'
+        +'<div class="wtop"><b>'+w[0]+'</b><i>'+w[1]+'</i>'+(m==='u'?'<span class="badge">复习队列</span>':'')+'</div>'
+        +'<p class="wpos">'+w[2]+'</p>'
+        +'<p class="wex">'+w[3]+' <span>'+w[4]+'</span></p>'
+        +'<div class="wact">'
+        +'<button class="k'+(m==='k'?' on':'')+'" data-w="'+w[0]+'" data-m="k" type="button">认识</button>'
+        +'<button class="u'+(m==='u'?' on':'')+'" data-w="'+w[0]+'" data-m="u" type="button">不认识</button>'
+        +'</div></div>'});
+    $('wList').innerHTML=html}
+  function renderHomeWord(){
+    var list=todayList(),known=0;
+    list.forEach(function(w){if(S.marks[w[0]]==='k')known++});
+    $('hTag').textContent=known+' / '+list.length;
+    $('hBar').style.width=(list.length?known/list.length*100:0)+'%';
+    $('hSub').textContent=known>=list.length?'今天的 20 个词全部掌握，明天见':'今天还有 '+(list.length-known)+' 个词没标'}
+
+  /* ========== 真题练习 ========== */
+  function itemHtml(it,type){
+    var st=S.quiz[it.id],h='<div class="qcard"><p class="qtxt"><b>'+(type==='choice'?'Q':'')+it.id.replace(/[a-z]/g,'')+'.</b> '+it.q+'</p>';
+    it.opts.forEach(function(o,i){
+      var cls='opt';
+      if(st){if(i===it.ans)cls+=' ok';else if(i===st.pick)cls+=' no'}
+      h+='<button class="'+cls+'" data-q="'+it.id+'" data-t="'+type+'" data-i="'+i+'" type="button"'+(st?' disabled':'')+'>'+String.fromCharCode(65+i)+'. '+o+'</button>'});
+    if(st)h+='<div class="ana"><b>'+(st.pick===it.ans?'回答正确':'回答错误')+'</b>　正确答案：'+String.fromCharCode(65+it.ans)+'<br>'+it.ana+'</div>';
+    return h+'</div>'}
+  function renderQuiz(){
+    $('choiceBox').innerHTML=CHOICE.map(function(it){return itemHtml(it,'choice')}).join('');
+    $('readBox').innerHTML=READING.map(function(it){return itemHtml(it,'reading')}).join('');
+    $('passage').textContent=PASSAGE;
+    var c=0,cr=0,r=0,rc=0;
+    CHOICE.forEach(function(it){if(S.quiz[it.id]){c++;if(S.quiz[it.id].pick===it.ans)cr++}});
+    READING.forEach(function(it){if(S.quiz[it.id]){r++;if(S.quiz[it.id].pick===it.ans)rc++}});
+    $('cScore').textContent='已答 '+c+' / 5 · 正确 '+cr;
+    $('rScore').textContent='已答 '+r+' / 5 · 正确 '+rc}
+  function answer(id,type,i){
+    if(S.quiz[id])return;
+    var pool=type==='choice'?CHOICE:READING,item=null;
+    pool.forEach(function(x){if(x.id===id)item=x});
+    if(!item)return;
+    S.quiz[id]={pick:i};set('c4_quiz',S.quiz);
+    if(i!==item.ans){
+      var exists=false;
+      S.wrong.forEach(function(x){if(x.id===id)exists=true});
+      if(!exists){
+        S.wrong.unshift({id:id,type:type,q:item.q,opts:item.opts,ans:item.ans,mine:i,ana:item.ana,time:Date.now()});
+        S.wrongTotal=S.wrongTotal+1;
+        set('c4_wrong',S.wrong);set('c4_wrong_total',S.wrongTotal)}}
+    renderQuiz();renderWrong()}
+
+  /* ========== 作文 ========== */
+  function renderWriting(){
+    var html='';
+    WRITING.forEach(function(g){
+      html+='<section class="card"><div class="row"><span class="k">'+g.name+'</span><span class="tag">'+g.tag+'</span></div>'
+        +'<div class="frame" style="margin-top:12px">'+g.frame.map(function(f){return '<p>'+f+'</p>'}).join('')+'</div>';
+      g.essays.forEach(function(e){
+        html+='<details><summary>'+e.t+'</summary><div class="dbody">'
+          +e.ps.map(function(p){return '<p>'+p.replace(/\n/g,'<br>')+'</p>'}).join('')
+          +'</div></details>'});
+      html+='</section>'});
+    $('writeList').innerHTML=html}
+
+  /* ========== 错题本 ========== */
+  function renderWrong(){
+    var left=S.wrong.length,total=S.wrongTotal,mastered=Math.max(total-left,0);
+    var pct=total?Math.round(mastered/total*100):0;
+    $('w2Pill').textContent=pct+'%';
+    $('w2Bar').style.width=pct+'%';
+    $('w2Sub').textContent=total?('已掌握 '+mastered+' 题 · 待复习 '+left+' 题'):'还没有错题，去真题练习试试';
+    if(!left){$('wrongList').innerHTML='<div class="card"><div class="empty">错题本是空的 👍<br>去“真题练习”做一组，答错的题会自动收到这里</div></div>';return}
+    var html='';
+    S.wrong.forEach(function(x){
+      html+='<div class="wrong"><h4>'+(x.type==='choice'?'单选':'阅读')+'　'+x.q+'</h4>'
+        +'<p class="mine">你选了：'+String.fromCharCode(65+x.mine)+'. '+x.opts[x.mine]+'</p>'
+        +'<p class="right">正确答案：'+String.fromCharCode(65+x.ans)+'. '+x.opts[x.ans]+'</p>'
+        +'<div class="ana">'+x.ana+'</div>'
+        +'<button class="btn g" data-rm="'+x.id+'" type="button" style="margin-top:9px">已掌握，移出错题本</button></div>'});
+    $('wrongList').innerHTML=html}
+
+  /* ========== 事件 ========== */
+  $('chkBtn').addEventListener('click',function(){
+    var t=ymd(new Date());
+    if(S.log.indexOf(t)>=0)return;
+    S.log.push(t);S.log.sort();set('c4_log',S.log);renderCheck();
+    var b=$('chkBtn');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')});
+  $('undoBtn').addEventListener('click',function(){
+    var i=S.log.indexOf(ymd(new Date()));
+    if(i<0)return;
+    S.log.splice(i,1);set('c4_log',S.log);renderCheck()});
+
+  var box=$('editBox'),inp=$('dateInput'),err=$('err');
+  $('editBtn').addEventListener('click',function(){
+    box.hidden=!box.hidden;
+    if(!box.hidden){inp.value=S.exam;err.textContent='';try{inp.focus()}catch(e){}}});
+  $('cancelBtn').addEventListener('click',function(){box.hidden=true;err.textContent=''});
+  $('saveBtn').addEventListener('click',function(){
+    if(!okdate(inp.value)){err.textContent='请选择一个日期';return}
+    S.exam=inp.value;set('c4_exam',S.exam);box.hidden=true;err.textContent='';tick()});
+  $('resetBtn').addEventListener('click',function(){
+    S.exam=ymd(defExam());inp.value=S.exam;set('c4_exam',S.exam);err.textContent='';tick()});
+
+  $('wList').addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('button[data-w]'):null;
+    if(!b)return;
+    var w=b.getAttribute('data-w'),m=b.getAttribute('data-m');
+    if(S.marks[w]===m)delete S.marks[w];else S.marks[w]=m;
+    set('c4_marks',S.marks);
+    renderWords();renderHomeWord()});
+
+  $('view-exam').addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('button[data-q]'):null;
+    if(!b)return;
+    answer(b.getAttribute('data-q'),b.getAttribute('data-t'),+b.getAttribute('data-i'))});
+  $('cReset').addEventListener('click',function(){
+    CHOICE.forEach(function(it){delete S.quiz[it.id]});set('c4_quiz',S.quiz);renderQuiz()});
+  $('rReset').addEventListener('click',function(){
+    READING.forEach(function(it){delete S.quiz[it.id]});set('c4_quiz',S.quiz);renderQuiz()});
+
+  $('wrongList').addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('button[data-rm]'):null;
+    if(!b)return;
+    var id=b.getAttribute('data-rm');
+    S.wrong=S.wrong.filter(function(x){return x.id!==id});
+    set('c4_wrong',S.wrong);renderWrong()});
+
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  function go(v){
+    tabs.forEach(function(t){t.classList.toggle('on',t.getAttribute('data-v')===v)});
+    [].slice.call(document.querySelectorAll('.view')).forEach(function(s){
+      s.classList.toggle('on',s.id==='view-'+v)});
+    if(v==='words'){renderWords();renderHomeWord()}
+    if(v==='exam')renderQuiz();
+    if(v==='wrong')renderWrong();
+    window.scrollTo(0,0)}
+  tabs.forEach(function(t){t.addEventListener('click',function(){go(t.getAttribute('data-v'))})});
+  $('hGo').addEventListener('click',function(){go('words')});
+
+  /* ========== 启动 ========== */
+  renderCheck();tick();renderHomeWord();renderWords();renderQuiz();renderWriting();renderWrong();
+  setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
