@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<title>四级学习助手 · 倒计时 + 单词打卡</title>
+<style>
+:root{--g:#16a34a;--gd:#15803d;--gl:#ecfdf5;--gb:#bbf7d0;--ink:#0f172a;--mu:#64748b;--ln:#e9eef3}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#fff}
+body{color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;padding:16px 14px 28px}
+.wrap{max-width:960px;margin:0 auto}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 14px rgba(22,163,74,.28)}
+h1{margin:0;font-size:17px}
+.sub{margin:2px 0 0;font-size:12px;color:var(--mu)}
+.tag{font-size:11px;color:var(--gd);background:var(--gl);border:1px solid var(--gb);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:820px){.grid{grid-template-columns:1.05fr .95fr}}
+.card{background:#fff;border:1px solid var(--ln);border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(15,23,42,.05)}
+.card.count{background:linear-gradient(160deg,#f2fdf6,#fff 62%);border-color:#d7f0e1}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.k{font-size:13px;color:var(--mu);font-weight:600}
+.mini{border:1px solid var(--ln);background:#fff;color:var(--mu);font:inherit;font-size:12px;padding:5px 11px;border-radius:999px;cursor:pointer}
+.mini:hover{color:var(--gd);border-color:var(--gb);background:var(--gl)}
+.big{display:flex;align-items:baseline;gap:7px;margin:12px 0 2px}
+.num{font-size:clamp(46px,13vw,66px);line-height:1;font-weight:800;color:var(--g);letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.unit{font-size:16px;font-weight:700;color:var(--gd)}
+.dateline{font-size:13px;color:var(--mu)}
+.dateline b{color:var(--ink)}
+.hms{margin-top:10px;display:inline-block;font-size:12.5px;color:var(--gd);background:var(--gl);border:1px solid var(--gb);padding:5px 11px;border-radius:999px;font-variant-numeric:tabular-nums}
+.editbox{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px dashed var(--ln);padding-top:12px}
+input[type=date]{font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--ln);border-radius:10px;color:var(--ink);min-width:150px;outline:none;background:#fff}
+input[type=date]:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+.btn{font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;border:1px solid transparent;cursor:pointer}
+.btn.p{background:var(--g);color:#fff}.btn.p:hover{background:var(--gd)}
+.btn.g{background:#fff;border-color:var(--ln);color:var(--mu)}.btn.g:hover{border-color:var(--gb);color:var(--gd)}
+.err{font-size:12px;color:#ef4444}
+.pill{font-size:12px;color:var(--gd);background:var(--gl);border:1px solid var(--gb);border-radius:999px;padding:4px 11px;white-space:nowrap}
+.chk{margin:14px 0 13px;width:100%;border:0;border-radius:16px;padding:17px;font:inherit;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 10px 22px rgba(22,163,74,.28);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:transform .15s,box-shadow .2s}
+.chk:hover{box-shadow:0 12px 26px rgba(22,163,74,.34)}
+.chk:active{transform:scale(.985)}
+.chk.done{background:var(--gl);color:var(--gd);border:1.5px solid var(--gb);box-shadow:none;cursor:default}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:0 0 13px}
+.day{display:flex;flex-direction:column;align-items:center;gap:5px}
+.dot{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#94a3b8;background:#f6f8fa;border:1px solid #eef2f6}
+.day.on .dot{background:var(--g);border-color:var(--g);color:#fff}
+.day.today .dot{box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.wl{font-size:10px;color:#94a3b8}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--ln);padding-top:12px}
+.stat{text-align:center}
+.stat b{display:block;font-size:18px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--mu)}
+.undo{margin:10px 0 0;text-align:center;min-height:15px}
+.undo button{background:none;border:0;font:inherit;font-size:12px;color:#94a3b8;text-decoration:underline;cursor:pointer}
+.undo button:hover{color:#ef4444}
+.card.word{margin-top:12px}
+.w{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:9px 0 5px}
+.w b{font-size:22px}
+.w i{font-style:normal;font-size:13px;color:var(--mu)}
+.mean{margin:0 0 7px;font-size:14px}
+.ex{margin:0;font-size:13px;color:var(--mu);line-height:1.65}
+.ex em{color:var(--gd);font-style:normal;font-weight:600}
+.foot{margin:14px 0 0;text-align:center;font-size:11px;color:#a8b3c0;line-height:1.7}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.035)}100%{transform:scale(1)}}
+.chk.pop{animation:pop .45s ease}
+@media (prefers-reduced-motion:reduce){.chk.pop{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="brand">
+      <div class="logo">四</div>
+      <div><h1>四级学习助手</h1><p class="sub">考试倒计时 · 每日单词打卡</p></div>
+    </div>
+    <span class="tag">无需登录</span>
+  </div>
+
+  <div class="grid">
+    <section class="card count">
+      <div class="row"><span class="k">距离四级考试还有</span>
+        <button class="mini" id="editBtn" type="button">修改日期</button></div>
+      <div class="big"><span class="num" id="days">--</span><span class="unit">天</span></div>
+      <div class="dateline">考试时间：<b id="examDate">—</b> 09:00</div>
+      <div class="hms" id="hms">—</div>
+      <div class="editbox" id="editBox" hidden>
+        <input type="date" id="dateInput" aria-label="选择考试日期">
+        <button class="btn p" id="saveBtn" type="button">保存</button>
+        <button class="btn g" id="resetBtn" type="button">复原默认</button>
+        <button class="btn g" id="cancelBtn" type="button">取消</button>
+        <span class="err" id="err"></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="row"><span class="k">每日单词打卡</span>
+        <span class="pill">连续 <b id="streak">0</b> 天</span></div>
+      <button class="chk" id="chkBtn" type="button"><span id="chkIc">✓</span><span id="chkTxt">今日打卡</span></button>
+      <div class="week" id="week"></div>
+      <div class="stats">
+        <div class="stat"><b id="total">0</b><span>累计打卡</span></div>
+        <div class="stat"><b id="month">0</b><span>本月打卡</span></div>
+        <div class="stat"><b id="best">0</b><span>最长连续</span></div>
+      </div>
+      <p class="undo"><button id="undoBtn" type="button" hidden>点错了？撤销今日打卡</button></p>
+    </section>
+  </div>
+
+  <section class="card word">
+    <div class="row"><span class="k">今日单词</span><span class="tag">CET-4 核心词</span></div>
+    <div class="w"><b id="wWord">—</b><i id="wPhon">—</i></div>
+    <p class="mean" id="wMean">—</p>
+    <p class="ex" id="wEx">—</p>
+  </section>
+
+  <p class="foot">打卡记录与考试日期只保存在你自己的浏览器里，无需登录、不上传<br>默认考试日期按历年规律估算（6月／12月第二个周六），请以官方公告为准，可自行修改</p>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var K1='cet4_exam_date',K2='cet4_checkin_log';
+  var WK=['日','一','二','三','四','五','六'];
+  function pad(n){return n<10?'0'+n:''+n}
+  function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function pdate(s){var a=String(s).split('-');return new Date(+a[0],+a[1]-1,+a[2])}
+  function ok(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s||''))}
+  function secondSat(y,m){var d=new Date(y,m,1);return new Date(y,m,1+((6-d.getDay()+7)%7)+7)}
+  function defExam(){var t=new Date(),y=t.getFullYear(),d0=new Date(y,t.getMonth(),t.getDate());
+    var c=[secondSat(y,5),secondSat(y,11)];
+    for(var i=0;i<c.length;i++){if(c[i].getTime()>=d0.getTime())return c[i]}
+    return secondSat(y+1,5)}
+
+  var exam='',log=[];
+  try{exam=localStorage.getItem(K1)||''}catch(e){}
+  try{var raw=localStorage.getItem(K2);log=raw?JSON.parse(raw):[]}catch(e){log=[]}
+  if(!Array.isArray(log))log=[];
+  var seen={};
+  log=log.filter(function(x){if(!ok(x)||seen[x])return false;seen[x]=1;return true}).sort();
+  if(!ok(exam))exam=ymd(defExam());
+  function save(){try{localStorage.setItem(K1,exam);localStorage.setItem(K2,JSON.stringify(log))}catch(e){}}
+
+  function calcStreak(){
+    if(!log.length)return 0;
+    var set={};log.forEach(function(d){set[d]=1});
+    var d=new Date();
+    if(!set[ymd(d)])d=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1);
+    var n=0;while(set[ymd(d)]){n++;d=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1)}
+    return n}
+  function calcBest(){
+    if(!log.length)return 0;
+    var a=log.slice().sort(),best=1,cur=1;
+    for(var i=1;i<a.length;i++){
+      var df=Math.round((pdate(a[i])-pdate(a[i-1]))/86400000);
+      if(df===1){cur++;if(cur>best)best=cur}else if(df>1){cur=1}}
+    return best}
+
+  function tick(){
+    var ex=pdate(exam);
+    $('examDate').textContent=ex.getFullYear()+'年'+(ex.getMonth()+1)+'月'+ex.getDate()+'日 周'+WK[ex.getDay()];
+    var now=new Date();
+    var d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    var days=Math.round((new Date(ex.getFullYear(),ex.getMonth(),ex.getDate())-d0)/86400000);
+    $('days').textContent=days<0?0:days;
+    var h=$('hms');
+    if(days<0){h.textContent='这一场已结束，点右上角设置下次考试';return}
+    var diff=new Date(ex.getFullYear(),ex.getMonth(),ex.getDate(),9,0,0)-now;
+    if(diff<=0){h.textContent='今天已经开考 · 稳住，正常发挥就好';return}
+    var hh=Math.floor(diff/3600000),mm=Math.floor(diff%3600000/60000),ss=Math.floor(diff%60000/1000);
+    h.textContent=(days===0?'今天开考 · ':'')+pad(hh)+' 小时 '+pad(mm)+' 分 '+pad(ss)+' 秒'}
+
+  function renderWeek(){
+    var t=new Date(),html='';
+    for(var i=6;i>=0;i--){
+      var d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i);
+      var on=log.indexOf(ymd(d))>=0;
+      html+='<div class="day'+(on?' on':'')+(i===0?' today':'')+'"><div class="dot">'+(on?'✓':d.getDate())+'</div><div class="wl">'+WK[d.getDay()]+'</div></div>'}
+    $('week').innerHTML=html}
+
+  function renderChk(){
+    var t=ymd(new Date()),done=log.indexOf(t)>=0;
+    $('chkBtn').classList.toggle('done',done);
+    $('chkTxt').textContent=done?'今日已打卡':'今日打卡';
+    $('chkIc').textContent=done?'✓':'＋';
+    $('streak').textContent=calcStreak();
+    $('total').textContent=log.length;
+    var n=new Date(),pre=n.getFullYear()+'-'+pad(n.getMonth()+1);
+    $('month').textContent=log.filter(function(d){return d.indexOf(pre)===0}).length;
+    $('best').textContent=calcBest();
+    $('undoBtn').hidden=!done;
+    renderWeek()}
+
+  var WORDS=[
+    ['abandon','/əˈbændən/','v. 放弃；抛弃；离弃','They had to <em>abandon</em> the plan because of the heavy rain.','因为大雨，他们不得不放弃这个计划。'],
+    ['absorb','/əbˈsɔːb/','v. 吸收；吸引；使全神贯注','Plants <em>absorb</em> water through their roots.','植物通过根部吸收水分。'],
+    ['academic','/ˌækəˈdemɪk/','adj. 学术的；学院的','Her <em>academic</em> performance improved a lot this term.','这学期她的学业表现进步很大。'],
+    ['accompany','/əˈkʌmpəni/','v. 陪伴；伴随；为……伴奏','I will <em>accompany</em> you to the library after class.','下课后我陪你去图书馆。'],
+    ['accurate','/ˈækjərət/','adj. 准确的；精确的','Please make sure the information is <em>accurate</em>.','请确保这些信息准确无误。'],
+    ['achieve','/əˈtʃiːv/','v. 达到；实现；完成','You can <em>achieve</em> your goal with daily practice.','坚持每天练习，你就能实现目标。'],
+    ['adapt','/əˈdæpt/','v. 适应；改编','It took him a month to <em>adapt</em> to college life.','他花了一个月适应大学生活。'],
+    ['adequate','/ˈædɪkwət/','adj. 足够的；适当的','Make sure you get <em>adequate</em> sleep before the exam.','考试前一定要保证充足的睡眠。'],
+    ['adjust','/əˈdʒʌst/','v. 调整；调节；适应','You may need to <em>adjust</em> your study plan.','你可能需要调整一下学习计划。'],
+    ['advocate','/ˈædvəkeɪt/','v. 提倡；主张 n. 拥护者','Many teachers <em>advocate</em> learning words in sentences.','很多老师提倡在句子里记单词。'],
+    ['alternative','/ɔːlˈtɜːnətɪv/','n. 替代方案 adj. 可供替代的','We need an <em>alternative</em> way to solve this problem.','我们需要另一种方法来解决这个问题。'],
+    ['analyze','/ˈænəlaɪz/','v. 分析；解析','Try to <em>analyze</em> why you made the mistake.','试着分析一下你为什么会做错。'],
+    ['apparent','/əˈpærənt/','adj. 明显的；表面上的','It soon became <em>apparent</em> that he was nervous.','很快就能看出他很紧张。'],
+    ['appreciate','/əˈpriːʃieɪt/','v. 欣赏；感激；理解','I really <em>appreciate</em> your help with my English.','非常感谢你帮我学英语。'],
+    ['approach','/əˈprəʊtʃ/','n. 方法；途径 v. 接近','This <em>approach</em> works well for vocabulary building.','这个方法对积累词汇很有效。'],
+    ['appropriate','/əˈprəʊpriət/','adj. 合适的；恰当的','Choose <em>appropriate</em> words for a formal letter.','写正式信件要选用恰当的词语。'],
+    ['assume','/əˈsjuːm/','v. 假设；认为；承担','Do not <em>assume</em> the answer without reading the passage.','不读文章就别想当然地选答案。'],
+    ['attach','/əˈtætʃ/','v. 附上；系上；使依附','Please <em>attach</em> your photo to the application form.','请把你的照片附在申请表上。'],
+    ['attitude','/ˈætɪtjuːd/','n. 态度；看法','A positive <em>attitude</em> matters more than talent.','积极的态度比天赋更重要。'],
+    ['available','/əˈveɪləbl/','adj. 可获得的；有空的','The reading room is <em>available</em> until ten at night.','阅览室开放到晚上十点。'],
+    ['aware','/əˈweə(r)/','adj. 意识到的；知道的','Be <em>aware</em> of the time limit in the exam.','注意考试的时限。'],
+    ['benefit','/ˈbenɪfɪt/','n. 好处 v. 受益','You will <em>benefit</em> from reading English news daily.','每天读英语新闻会让你受益。'],
+    ['capable','/ˈkeɪpəbl/','adj. 有能力的；能够的','She is <em>capable</em> of passing CET-4 this term.','她这学期有能力通过四级。'],
+    ['challenge','/ˈtʃælɪndʒ/','n. 挑战 v. 向……挑战','Listening is the biggest <em>challenge</em> for many students.','听力是很多学生最大的挑战。']
+  ];
+  function renderWord(){
+    var d=new Date();
+    var doy=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(d.getFullYear(),0,0))/86400000);
+    var w=WORDS[doy%WORDS.length];
+    $('wWord').textContent=w[0];$('wPhon').textContent=w[1];
+    $('wMean').textContent=w[2];$('wEx').innerHTML=w[3]+' <span>'+w[4]+'</span>'}
+
+  $('chkBtn').addEventListener('click',function(){
+    var t=ymd(new Date());
+    if(log.indexOf(t)>=0)return;
+    log.push(t);log.sort();save();renderChk();
+    var b=$('chkBtn');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')});
+
+  $('undoBtn').addEventListener('click',function(){
+    var i=log.indexOf(ymd(new Date()));
+    if(i<0)return;
+    log.splice(i,1);save();renderChk()});
+
+  var box=$('editBox'),inp=$('dateInput'),err=$('err');
+  $('editBtn').addEventListener('click',function(){
+    box.hidden=!box.hidden;
+    if(!box.hidden){inp.value=exam;err.textContent='';try{inp.focus()}catch(e){}}});
+  $('cancelBtn').addEventListener('click',function(){box.hidden=true;err.textContent=''});
+  $('saveBtn').addEventListener('click',function(){
+    if(!ok(inp.value)){err.textContent='请选择一个日期';return}
+    exam=inp.value;save();box.hidden=true;err.textContent='';tick()});
+  $('resetBtn').addEventListener('click',function(){
+    exam=ymd(defExam());inp.value=exam;save();err.textContent='';tick()});
+
+  renderWord();renderChk();tick();
+  setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
